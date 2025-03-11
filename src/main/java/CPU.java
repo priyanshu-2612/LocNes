@@ -45,7 +45,7 @@ public class CPU {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            cpu_memory[index] = data;
+//            cpu_memory[index] = data;
             ppu.cpuWrite(index, data);
         }
         else if(index >= 0x4016 && index <= 0x4017){

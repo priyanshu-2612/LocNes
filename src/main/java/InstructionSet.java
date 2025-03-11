@@ -1934,11 +1934,11 @@ public class InstructionSet {
             case ZeropageIndexed:
 //              loc = Byte.toUnsignedInt((byte) (cpu.cpu_memory[add(op , cpu.X)] & 0xff)) ;
                 loc = add(op,cpu.X);
-                if(0x2000 <= loc && loc <= 0x2007){
-                    ppu.cpuWrite((short) loc, cpu.Accumulator);
-                    cpu.PC += 2;
-                    return 4;
-                }
+//                if(0x2000 <= loc && loc <= 0x2007){
+//                    ppu.cpuWrite((short) loc, cpu.Accumulator);
+//                    cpu.PC += 2;
+//                    return 4;
+//                }
 //                cpu.cpu_memory[loc] = cpu.Accumulator;
                 cpu.writeTo(loc, cpu.Accumulator);
                 cpu.PC += 2;
@@ -1954,11 +1954,11 @@ public class InstructionSet {
                 System.out.println("Loc is " + Integer.toHexString(loc));
 //                val = Byte.toUnsignedInt((byte) (cpu.cpu_memory[loc] & 0xff));
 //                cpu.cpu_memory[val] = cpu.Accumulator;
-                if(0x2000 <= loc && loc <= 0x2007){
-                    ppu.cpuWrite((short) loc, cpu.Accumulator);
-                    cpu.PC += 2;
-                    return 6;
-                }
+//                if(0x2000 <= loc && loc <= 0x2007){
+//                    ppu.cpuWrite((short) loc, cpu.Accumulator);
+//                    cpu.PC += 2;
+//                    return 6;
+//                }
 //                cpu.cpu_memory[loc] = cpu.Accumulator;
                 cpu.writeTo(loc, cpu.Accumulator);
                 cpu.PC += 2;
@@ -1971,11 +1971,11 @@ public class InstructionSet {
 //                cpu.cpu_memory[val] = cpu.Accumulator;
                 loc = add(loc,cpu.Y);
                 System.out.println("Setting 0x" + Integer.toHexString(loc) +" to " + Byte.toUnsignedInt(cpu.Accumulator));
-                if(0x2000 <= loc && loc <= 0x2007){
-                    ppu.cpuWrite((short) loc, cpu.Accumulator);
-                    cpu.PC += 2;
-                    return 6;
-                }
+//                if(0x2000 <= loc && loc <= 0x2007){
+//                    ppu.cpuWrite((short) loc, cpu.Accumulator);
+//                    cpu.PC += 2;
+//                    return 6;
+//                }
 //                cpu.cpu_memory[loc] = cpu.Accumulator;
                 cpu.writeTo(loc, cpu.Accumulator);
                 cpu.PC += 2;
@@ -2007,11 +2007,11 @@ public class InstructionSet {
 
             case AbsoluteY:
                 loc = add(op , cpu.Y);
-                if(0x2000 <= loc && loc <= 0x2007){
-                    ppu.cpuWrite(op, cpu.Accumulator);
-                    cpu.PC += 3;
-                    return 5;
-                }
+//                if(0x2000 <= loc && loc <= 0x2007){
+//                    ppu.cpuWrite(op, cpu.Accumulator);
+//                    cpu.PC += 3;
+//                    return 5;
+//                }
 //                cpu.cpu_memory[add(op , cpu.Y)] = cpu.Accumulator;
                 cpu.writeTo(add(op , cpu.Y),cpu.Accumulator);
                 cpu.PC += 3;
