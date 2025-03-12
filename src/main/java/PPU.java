@@ -3,6 +3,7 @@ import javafx.scene.transform.Affine;
 
 import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.awt.Color;
+import java.io.IOException;
 
 public class PPU {
     Display display;
@@ -229,11 +230,7 @@ public class PPU {
     }
 
     public int getNMIenable(){
-//        if((cpu.cpu_memory[Controller_Address] & 0x80) >0) return 1;
-//        if((ppuRead((short) Controller_Address) & 0x80) >0) return 1;
-//        if((ppu_memory[Controller_Address] & 0x80) >0) return 1;
-//        if((cpu.cpu_memory[Controller_Address] & 0x80) >0) return 1;
-        if((ppu_registers[Controller_Address-0x2000] & 0x80) >0) return 1;
+        if((ppu_registers[Controller_Address-0x2000] & 0x80) != 0) return 1;
         else return 0;
     }
 

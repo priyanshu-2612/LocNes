@@ -100,7 +100,7 @@ public class CPU {
 
     public void push(byte val){
         SP = (byte) (SP & 0xff);
-        int address = 0x0100 + Byte.toUnsignedInt(SP);
+        int address = 0x0100 + (SP&0xff);
         cpu_memory[address] = val;
         SP--;
         SP = (byte) (SP & 0xFF);
@@ -109,7 +109,7 @@ public class CPU {
 
     public byte pop(){
         SP = (byte)((SP & 0xff) + 1);
-        int address = 0x0100 + Byte.toUnsignedInt(SP);
+        int address = 0x0100 + (SP&0xff);
         return cpu_memory[address];
     }
 }

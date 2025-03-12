@@ -358,7 +358,7 @@ public class InstructionSet {
         return 4;
     }
 
-    public void nmi(){
+    public int nmi(){
 //        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = (byte) ((cpu.PC >> 8) & 0x00ff);
 //        cpu.SP--;
         cpu.push((byte) ((cpu.PC >> 8) & 0x00ff));
@@ -376,6 +376,7 @@ public class InstructionSet {
 
         cpu.PC = (short) ((((cpu.cpu_memory[0xfffa+1]<<8)& 0xff00) + (cpu.cpu_memory[0xfffa])) & 0xffff);
         System.out.println("PC is now 0x" + Integer.toHexString(Short.toUnsignedInt(cpu.PC)));
+        return 8;
     }
 
     public int bmi(addressingMode A ,byte op){
@@ -402,7 +403,7 @@ public class InstructionSet {
     public int brk(addressingMode A){
 //        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = (byte) (cpu.PC >>> 8); //PC High
 //        cpu.SP = (byte) (sub(cpu.SP , 1) & 0xff);
-        cpu.push((byte) ((cpu.PC >>> 8)&0xff));
+        cpu.push((byte) ((cpu.PC >> 8)&0xff));
 
 //        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = (byte) (cpu.PC); //PC Low
 //        cpu.SP = (byte) (sub(cpu.SP , 1) & 0xff);
@@ -414,7 +415,7 @@ public class InstructionSet {
 //        cpu.SP = (byte) (sub(cpu.SP , 1) & 0xff);
         cpu.push(cpu.Status);
 
-        int loc = cpu.cpu_memory[0xffff] << 8 + cpu.cpu_memory[0xfffe];
+        int loc = (cpu.cpu_memory[0xffff] << 8) + cpu.cpu_memory[0xfffe];
         cpu.PC = (short) loc;
         return 7;
     }
