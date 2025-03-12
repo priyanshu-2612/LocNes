@@ -49,8 +49,15 @@ public class CPU {
             ppu.cpuWrite(index, data);
         }
         else if(index >= 0x4016 && index <= 0x4017){
-            for(int i=0; i<8; i++){
-                shift_register_4021[index & 0x0001] |= ((controller.controller_input[i]&0b01)<<(7-i));
+//            for(int i=0; i<8; i++){
+//                shift_register_4021[index & 0x0001] = 0;
+//                shift_register_4021[index & 0x0001] |= ((controller.controller_input[index & 0x0001][i]&0b01)<<(7-i));
+//            }
+            shift_register_4021[index & 0x0001] = (controller.controller_input[index & 0x0001]);
+            try {
+                cpu_logger.write("Writing " + Integer.toHexString(data&0xff) + " to $" + Integer.toHexString(index) + "\n");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -77,6 +84,11 @@ public class CPU {
             System.out.println("ATTEMPTING TO READ " + Integer.toHexString(index));
             int bit = (shift_register_4021[index&0x0001] & 0x80) != 0 ? 1 : 0;
             shift_register_4021[index&0x0001] = ((shift_register_4021[index&0x0001] << 1)&0xff);
+            try {
+                cpu_logger.write("Read " + bit + " from $" + Integer.toHexString(index) + "\n");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             return bit;
         }
         else{

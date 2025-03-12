@@ -27,7 +27,8 @@ public class PPU {
     int[][] patterntable = new int[2][4096];
     Color[] palScreen = new Color[0x40];
     int cycle=0 , scanline=-1;
-    int V, T;  //15 bits
+    int V;
+    int T;  //15 bits
     int X; //3 bits
     int write_toggle = 0; // 1 bit
     int bg_shifter_pattern_lo=0,bg_shifter_pattern_hi=0,bg_shifter_attrib_lo=0,bg_shifter_attrib_hi=0; //16 bits
@@ -143,7 +144,7 @@ public class PPU {
                 setVBlank();
                 System.out.println("VBlank is now set");
 
-                System.out.println("Controller is " + Byte.toUnsignedInt(ppu_memory[Controller_Address]));
+                System.out.println("Controller is " + Byte.toUnsignedInt(ppu_registers[Controller_Address-0x2000]));
                 if (getNMIenable()==1) {
                     System.out.println("NMI is now set");
                     nmi = true;
@@ -427,33 +428,25 @@ public class PPU {
     public byte cpuRead(int addr){
         //For when CPU wants to read the exposed registers
         int addr_value = addr & 0xffff;
-//        int location = 0x2000 + addr_value;
         switch(addr_value){
 
             case 0x2000:  //control
-//                return cpu.cpu_memory[location];
-                return ppu_memory[addr_value];
+                return ppu_registers[addr_value-0x2000];
             case 0x2001:  //mask
-//                return cpu.cpu_memory[location];
-                return ppu_memory[addr_value];
+                return ppu_registers[addr_value-0x2000];
             case 0x2002:  //status
                 write_toggle = 0;
-//                return cpu.cpu_memory[Status];
-//                return ppuRead((short) location);
                 return (byte) read_Status();
             case 0x2003:  //OAM address
-//                return cpu.cpu_memory[location];
-                return ppu_memory[addr_value];
+                return ppu_registers[addr_value-0x2000];
             case 0x2004:  //OAM data
-//                return cpu.cpu_memory[location];
-                return ppu_memory[addr_value];
+                return ppu_registers[addr_value-0x2000];
             case 0x2005:  //scroll
                 break;
             case 0x2006:  //ppu address
                 break;
             case 0x2007:  //ppu data
                 return (byte) read_from_Data();
-//                return cpu.cpu_memory[Data];
         }
 
         return 0;
@@ -465,10 +458,10 @@ public class PPU {
         switch(addr_value){
 
             case 0x2000:  //control
-                ppu_registers[0] = data;
+                ppu_registers[Controller_Address-0x2000] = data;
                 T =  (((T&0xf3ff) | ((data & 0x3) << 10)) & 0x7fff) & 0xffff;
                 System.out.println("T is " + Integer.toHexString(T));
-                System.out.println("PPUControl is " + Integer.toHexString(Byte.toUnsignedInt(ppu_registers[0])) );
+                System.out.println("PPUControl is " + Integer.toHexString(Byte.toUnsignedInt(ppu_registers[0])));
                 break;
             case 0x2001:  //mask
                 ppu_registers[1] = data;
@@ -480,17 +473,6 @@ public class PPU {
             case 0x2004:  //OAM data
                 break;
             case 0x2005:  //scroll
-//                int dsc = ppu_registers[Scroll-0x2000] & 0xff;
-//                if(write_toggle==0){
-//                    T = ( ((T&0xffe0) | ((dsc & 0b11111000) >> 3)) & 0x7fff) & 0xffff;
-//                    X =  (dsc & 0b00000111) & 0xff;
-//                    write_toggle = 1;
-//                }
-//                else{
-//                    T =  (( (T&0xfc1f) | ((dsc&0b11111000)<<5)) & 0x7fff) &0xffff;
-//                    T =  (( (T&0x8fff) | ((dsc&0b00000111)<<12)) & 0x7fff) &0xffff;
-//                    write_toggle = 0;
-//                }
                 int d = data & 0xff;
                 if(write_toggle==0){
                     T = ( ((T&0xffe0) | ((d >> 3)&0x1f) ) & 0x7fff) & 0xffff;
@@ -506,8 +488,8 @@ public class PPU {
                 break;
 
             case 0x2006:  //ppu address
-                write_to_address_reg(data);
-                int dad = ppu_registers[6] & 0xff;
+//                write_to_address_reg(data);
+                int dad = data & 0xff;
                 if(write_toggle==0){
                     T =  (( (T&0xc0ff) | ((dad & 0b00111111) << 8)) & 0x7fff)&0xffff;
                     T =  (T & 0xbfff) & 0xffff;
@@ -522,11 +504,15 @@ public class PPU {
 
             case 0x2007:  //ppu data
                 write_to_Data(data);
-                System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[7]));
-                if((ppu_registers[Controller_Address-0x2000] & 0x04) != 0)
-                        read_location += 32;
-                else
-                        read_location += 1;
+                System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[0]));
+                if((ppu_registers[Controller_Address-0x2000] & 0x04) != 0){
+//                        read_location += 32;
+                          V += 32;
+                }
+                else {
+//                        read_location += 1;
+                    V += 1;
+                }
                 break;
         }
     }
@@ -539,13 +525,11 @@ public class PPU {
 //        ppu_registers[Status-0x2000] &= (byte) 0x80; //clear the V-Blank bit
 //        cpuWrite((short) Status, (byte) (ppuRead((short) Status) & 0x80));
         ppu_registers[Status-0x2000] = (byte) (ppu_registers[Status-0x2000] & 0x7f); //clear the V-Blank bit
-//        address_latch = 0;
+        address_latch = 0;
         return data;
     }
 
     public void write_to_address_reg(byte value){
-//        ppu_memory[Address] = (byte) (addr & 0xff);
-//        ppuWrite((short) Address,(byte) (addr & 0xff) );
         ppu_registers[Address-0x2000] = (byte) (value & 0xff);
         if(address_latch==0) {
             read_location = ((value & 0xff)<<8)&0xff00;
@@ -557,42 +541,46 @@ public class PPU {
             System.out.println("Read Low is set to " + Integer.toHexString(read_location & 0xffff));
             address_latch = 0;
         }
-        update_status();
+//        update_status();
     }
 
     public void update_status(){
         if(getI()){
-//            add(ppu_memory[Controller_Address], 32);
             ppu_registers[Status-0x2000] = (byte) ((ppu_registers[Controller_Address-0x2000]+ 32)&0xff);
-//            ppuWrite((short) Status, (byte) (((ppuRead( Controller_Address)+ 32))&0xff));
-            System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[ Controller_Address-0x2000]));
+            System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[Controller_Address-0x2000]));
         }
         else{
-//            add(ppu_memory[Controller_Address], 1);
             ppu_registers[Status-0x2000] = (byte) ((ppu_registers[Controller_Address-0x2000]+1)&0xff);
-//            ppuWrite((short) Status, (byte) (((ppuRead(Controller_Address)+ 1)&0xff)));
             System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[Controller_Address-0x2000]));
         }
     }
 
     public boolean getI(){
-        return (((ppu_registers[Controller_Address-0x2000] >> 2) & 0x01) == 1);
+        return (((ppu_registers[Controller_Address-0x2000]) & 0x04) != 0);
 //        return (((ppuRead((short) Controller_Address) >> 2) & 0x01) == 1);
     }
 
     public int read_from_Data(){
         int return_value;
         return_value = PPU_Read_Buffer & 0xff;
-//        PPU_Read_Buffer = cpu.cpu_memory[read_location];
-        PPU_Read_Buffer = ppuRead(read_location)&0xff;
-        update_status();
+//        PPU_Read_Buffer = ppuRead(read_location)&0xff;
+        PPU_Read_Buffer = ppuRead(V)&0xff;
+//        update_status();
+        // However, if the address was in the palette range, the
+        // data is not delayed, so it returns immediately
+        if (V >= 0x3F00) return_value = PPU_Read_Buffer;
+        if((ppu_registers[Controller_Address-0x2000] & 0x04) != 0){
+            V += 32;
+        }
+        else{
+            V += 1;
+        }
         return return_value;
     }
 
     public void write_to_Data(byte data){
-        int write_location = read_location;
-//        int write_location = ppuRead((short) Address);
-//        ppu_memory[write_location] = (byte) (data & 0xff);
+//        int write_location = read_location;
+        int write_location = V;
         ppuWrite((short) (write_location), (byte) (data & 0xff));
         System.out.println("Wrote " + Integer.toHexString((data & 0xff)) + " to 0x" + Integer.toHexString(write_location));
     }

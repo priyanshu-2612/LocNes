@@ -54,29 +54,29 @@ public class Launch extends Application {
             public void handle(KeyEvent keyEvent) {
                 System.out.println("Key is " + keyEvent.getCode().toString());
                 switch(keyEvent.getCode().toString()){
-                    case "RIGHT":
-                        t.cpu.controller.controller_input[7] = 1;
-                        break;
-                    case "LEFT":
-                        t.cpu.controller.controller_input[6] = 1;
-                        break;
-                    case "DOWN":
-                        t.cpu.controller.controller_input[5] = 1;
-                        break;
-                    case "UP":
-                        t.cpu.controller.controller_input[4] = 1;
-                        break;
-                    case "ENTER":
-                        t.cpu.controller.controller_input[3] = 1;
-                        break;
-                    case "BACK_SPACE":
-                        t.cpu.controller.controller_input[2] = 1;
-                        break;
                     case "X":
-                        t.cpu.controller.controller_input[1] = 1;
+                        t.cpu.controller.controller_input[0] |= 0x80;
                         break;
                     case "Z":
-                        t.cpu.controller.controller_input[0] = 1;
+                        t.cpu.controller.controller_input[0] |= 0x40;
+                        break;
+                    case "BACK_SPACE":
+                        t.cpu.controller.controller_input[0] |= 0x20;
+                        break;
+                    case "ENTER":
+                        t.cpu.controller.controller_input[0] |= 0x10;
+                        break;
+                    case "UP":
+                        t.cpu.controller.controller_input[0] |= 0x08;
+                        break;
+                    case "DOWN":
+                        t.cpu.controller.controller_input[0] |= 0x04;
+                        break;
+                    case "LEFT":
+                        t.cpu.controller.controller_input[0] |= 0x02;
+                        break;
+                    case "RIGHT":
+                        t.cpu.controller.controller_input[0] |= 0x01;
                         break;
                 }
             }
@@ -86,29 +86,29 @@ public class Launch extends Application {
             public void handle(KeyEvent keyEvent) {
                 System.out.println("Key is " + keyEvent.getCode().toString());
                 switch(keyEvent.getCode().toString()){
-                    case "RIGHT":
-                        t.cpu.controller.controller_input[7] = 0;
-                        break;
-                    case "LEFT":
-                        t.cpu.controller.controller_input[6] = 0;
-                        break;
-                    case "DOWN":
-                        t.cpu.controller.controller_input[5] = 0;
-                        break;
-                    case "UP":
-                        t.cpu.controller.controller_input[4] = 0;
-                        break;
-                    case "ENTER":
-                        t.cpu.controller.controller_input[3] = 0;
-                        break;
-                    case "BACK_SPACE":
-                        t.cpu.controller.controller_input[2] = 0;
-                        break;
                     case "X":
-                        t.cpu.controller.controller_input[1] = 0;
+                        t.cpu.controller.controller_input[0] ^= 0x80;
                         break;
                     case "Z":
-                        t.cpu.controller.controller_input[0] = 0;
+                        t.cpu.controller.controller_input[0] ^= 0x40;
+                        break;
+                    case "BACK_SPACE":
+                        t.cpu.controller.controller_input[0] ^= 0x20;
+                        break;
+                    case "ENTER":
+                        t.cpu.controller.controller_input[0] ^= 0x10;
+                        break;
+                    case "UP":
+                        t.cpu.controller.controller_input[0] ^= 0x08;
+                        break;
+                    case "DOWN":
+                        t.cpu.controller.controller_input[0] ^= 0x04;
+                        break;
+                    case "LEFT":
+                        t.cpu.controller.controller_input[0] ^= 0x02;
+                        break;
+                    case "RIGHT":
+                        t.cpu.controller.controller_input[0] ^= 0x01;
                         break;
                 }
             }
