@@ -127,6 +127,7 @@ public class Launch extends Application {
                         System.out.println("SIZE OF CANVAS IS " + stage.getWidth() + " " + stage.getHeight());
                     } catch (RuntimeException e) {
                         System.out.println("GAME OVER");
+                        e.printStackTrace();
                         gameLoop.stop();
                     }
                 });
