@@ -1,6 +1,7 @@
 package main.java;
 
 import javax.swing.plaf.synth.SynthOptionPaneUI;
+import java.sql.SQLOutput;
 
 public class InstructionSet {
 
@@ -374,7 +375,11 @@ public class InstructionSet {
 //        cpu.SP--;
         cpu.push(cpu.Status);
 
-        cpu.PC = (short) ((((cpu.cpu_memory[0xfffa+1]<<8)& 0xff00) + (cpu.cpu_memory[0xfffa])) & 0xffff);
+        int PC_HIGH = ((cpu.cpu_memory[0xfffa+1]<<8) & 0xff00);
+        int PC_LOW = ((cpu.cpu_memory[0xfffa]) & 0x00ff);
+        cpu.PC = (short) (PC_HIGH + PC_LOW);
+        System.out.println("PC_HIGH is " + PC_HIGH);
+        System.out.println("PC_LOW is " + PC_LOW);
         System.out.println("PC is now 0x" + Integer.toHexString(Short.toUnsignedInt(cpu.PC)));
         return 8;
     }
