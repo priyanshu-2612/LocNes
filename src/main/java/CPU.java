@@ -23,28 +23,28 @@ public class CPU {
         Status = 0x24;
         controller = new Controller();
         shift_register_4021 = new int[2];
-        try {
-            cpu_logger = new FileWriter("C:/Users/prash/Downloads/CPU_logger.txt");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            cpu_logger = new FileWriter("C:/Users/prash/Downloads/CPU_logger.txt");
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     public void writeTo(int index, byte data){
         index = index & 0xffff;
         if(index <= 0x07ff){
             //cpu memory
-            System.out.println("Loading " + Integer.toHexString(Byte.toUnsignedInt(data)) + " in cpu Location 0x" + Integer.toHexString(index));
+            //System.out.println("Loading " + Integer.toHexString(Byte.toUnsignedInt(data)) + " in cpu Location 0x" + Integer.toHexString(index));
             cpu_memory[index] = data;
         }
         else if(index >= 0x2000 && index <= 0x2007){
             //These registers are also exposed to the ppu
-            System.out.println("Attempting to write " + Integer.toHexString(data&0xff)+ " to 0x" + Integer.toHexString(index));
-            try {
-                cpu_logger.write("Writing " + Integer.toHexString(data&0xff) + " to $" + Integer.toHexString(index) + "\n");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            //System.out.println("Attempting to write " + Integer.toHexString(data&0xff)+ " to 0x" + Integer.toHexString(index));
+//            try {
+//                cpu_logger.write("Writing " + Integer.toHexString(data&0xff) + " to $" + Integer.toHexString(index) + "\n");
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
 //            cpu_memory[index] = data;
             ppu.cpuWrite(index, data);
         }
@@ -54,11 +54,11 @@ public class CPU {
 //                shift_register_4021[index & 0x0001] |= ((controller.controller_input[index & 0x0001][i]&0b01)<<(7-i));
 //            }
             shift_register_4021[index & 0x0001] = (controller.controller_input[index & 0x0001]);
-            try {
-                cpu_logger.write("Writing " + Integer.toHexString(data&0xff) + " to $" + Integer.toHexString(index) + "\n");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+//            try {
+//                cpu_logger.write("Writing " + Integer.toHexString(data&0xff) + " to $" + Integer.toHexString(index) + "\n");
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         }
     }
 
@@ -66,33 +66,33 @@ public class CPU {
         index = index & 0xffff;
         if(index <=0x1fff) {
             index = (index&0x07ff);
-            System.out.println("Returning " + Integer.toHexString(cpu_memory[index & 0xffff]&0xff));
+            //System.out.println("Returning " + Integer.toHexString(cpu_memory[index & 0xffff]&0xff));
             return (cpu_memory[index]&0xff);
         }
         else if(index <= 0x3fff && index >= 0x2000){
             index = 0x2000 + (index&0x0007);
-            System.out.println("Attempting to read ppu register 0x" + Integer.toHexString(index));
-            try {
-                cpu_logger.write("Reading from $" + Integer.toHexString(index)+"\n");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            //System.out.println("Attempting to read ppu register 0x" + Integer.toHexString(index));
+//            try {
+//                cpu_logger.write("Reading from $" + Integer.toHexString(index)+"\n");
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
 //            return ppu.cpuRead((short) ((index-0x2000)&0xffff));
             return ppu.cpuRead((short) ((index)&0xffff));
         }
         else if(index >= 0x4016 && index <= 0x4017){
-            System.out.println("ATTEMPTING TO READ " + Integer.toHexString(index));
+            //System.out.println("ATTEMPTING TO READ " + Integer.toHexString(index));
             int bit = (shift_register_4021[index&0x0001] & 0x80) != 0 ? 1 : 0;
             shift_register_4021[index&0x0001] = ((shift_register_4021[index&0x0001] << 1)&0xff);
-            try {
-                cpu_logger.write("Read " + bit + " from $" + Integer.toHexString(index) + "\n");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+//            try {
+//                cpu_logger.write("Read " + bit + " from $" + Integer.toHexString(index) + "\n");
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
             return bit;
         }
         else{
-            System.out.println("At " + Integer.toHexString(index) + " we have " + Integer.toHexString(cpu_memory[index]&0xff));
+            //System.out.println("At " + Integer.toHexString(index) + " we have " + Integer.toHexString(cpu_memory[index]&0xff));
 //            throw new RuntimeException("Memory location : "+ Integer.toHexString(index) + " cannot be read");
             return cpu_memory[index]&0xff;
         }
@@ -104,7 +104,7 @@ public class CPU {
         cpu_memory[address] = val;
         SP--;
         SP = (byte) (SP & 0xFF);
-        System.out.println("Value Pushed : " + Integer.toHexString(Byte.toUnsignedInt(val)) + " at 0x" + Integer.toHexString(address));
+        //System.out.println("Value Pushed : " + Integer.toHexString(Byte.toUnsignedInt(val)) + " at 0x" + Integer.toHexString(address));
     }
 
     public byte pop(){

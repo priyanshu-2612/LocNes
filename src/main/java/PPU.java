@@ -63,23 +63,23 @@ public class PPU {
                         LoadBackgroundShifters();
                         int nt_offset = 0;
                         nt_offset = 0x2000 | (V & 0x0fff);
-                        System.out.println("Accessing nametable byte at address " +Integer.toHexString(nt_offset));
+                        //System.out.println("Accessing nametable byte at address " +Integer.toHexString(nt_offset));
                         nametableByte = ppuRead(nt_offset)&0xff;
-                        System.out.println("Read " + Integer.toHexString(nametableByte) + " from there");
+                        //System.out.println("Read " + Integer.toHexString(nametableByte) + " from there");
 //                        nametableByte <<= 4;
                         bg_next_tile_id = nametableByte;
                         break;
                     case 2:
-                        System.out.println("V is " + Integer.toBinaryString(V));
+                        //System.out.println("V is " + Integer.toBinaryString(V));
                         int coarse_x = V & 0x1f , coarse_y = (V & 0x03e0) >> 5;
-                        System.out.println("At coordinates x: " + coarse_x +" y: " + coarse_y);
+                        //System.out.println("At coordinates x: " + coarse_x +" y: " + coarse_y);
                         int blockx = ((coarse_x >> 2)& 0x7) , blocky = ((coarse_y >> 2)& 0x7);  //each is of 3 bits
                         int attributeOffset = ((blocky << 3)&0x38) + blockx;
                         int nt = ((V & 0x0c00) >> 10);
-                        System.out.println("In nametable " + Integer.toBinaryString(nt));
+                        //System.out.println("In nametable " + Integer.toBinaryString(nt));
                         bg_next_tile_attrib = ppuRead(0x23C0 | nt<<10 | attributeOffset);
-                        System.out.println("Attribute address is " + Integer.toHexString(0x23C0 | nt<<10 | blockx));
-                        System.out.println("Attribute byte is " + Integer.toHexString(bg_next_tile_attrib));
+                        //System.out.println("Attribute address is " + Integer.toHexString(0x23C0 | nt<<10 | blockx));
+                        //System.out.println("Attribute byte is " + Integer.toHexString(bg_next_tile_attrib));
                         if ((coarse_y & 0x02)!=0) bg_next_tile_attrib >>= 4;
                         if ((coarse_x & 0x02)!=0) bg_next_tile_attrib >>= 2;
                         bg_next_tile_attrib &= 0x03;
@@ -87,10 +87,10 @@ public class PPU {
                     case 4:
                         int fine_y = (V & 0x7000) >> 12;
                         fine_y = fine_y & 0x7;
-                        System.out.println("PPUControl is " + Integer.toBinaryString(ppu_registers[0]&0xff));
+                        //System.out.println("PPUControl is " + Integer.toBinaryString(ppu_registers[0]&0xff));
                         int address = ( (((ppu_registers[Controller_Address-0x2000]&0x10)>>4)<<12)&0x1000) + (bg_next_tile_id << 4) + fine_y ;
 //                        int address = ( 0x1000 + (bg_next_tile_id << 4) + fine_y) ;
-                        System.out.println("Loading sprite at " + Integer.toHexString(address) + " in ppu memory");
+                        //System.out.println("Loading sprite at " + Integer.toHexString(address) + " in ppu memory");
                         bg_next_tile_lsb = ppuRead(address)&0xff;
                         break;
                     case 6:
@@ -143,11 +143,11 @@ public class PPU {
             if (scanline == 241 && cycle == 1)
             {
                 setVBlank();
-                System.out.println("VBlank is now set");
+                //System.out.println("VBlank is now set");
 
-                System.out.println("Controller is " + Byte.toUnsignedInt(ppu_registers[Controller_Address-0x2000]));
+                //System.out.println("Controller is " + Byte.toUnsignedInt(ppu_registers[Controller_Address-0x2000]));
                 if (getNMIenable()==1) {
-                    System.out.println("NMI is now set");
+                    //System.out.println("NMI is now set");
                     nmi = true;
                 }
             }
@@ -170,7 +170,7 @@ public class PPU {
             // offsetting ALL background rendering by a set number
             // of pixels, permitting smooth scrolling
             int fine_x = X;
-            System.out.println("V : " + Integer.toBinaryString(V));
+            //System.out.println("V : " + Integer.toBinaryString(V));
             int bit_mux =  ((0x8000 >> fine_x) & 0xffff); // 16 bits
 
             // Select Plane pixels by extracting from the shifter
@@ -180,13 +180,13 @@ public class PPU {
 
             // Combine to form pixel index
             bg_pixel = (byte) ((p1_pixel << 1) | p0_pixel);
-            System.out.println("Background pixel is " + bg_pixel);
+            //System.out.println("Background pixel is " + bg_pixel);
 
             // Get palette
               byte bg_pal0 = (byte) ((bg_shifter_attrib_lo & bit_mux) != 0 ? 1 : 0);
               byte bg_pal1 = (byte) ((bg_shifter_attrib_hi & bit_mux) != 0 ? 1 : 0);
               bg_palette = (byte) ((bg_pal1 << 1) | bg_pal0);
-            System.out.println("Palette is " + Integer.toHexString(Byte.toUnsignedInt(bg_palette)) );
+            //System.out.println("Palette is " + Integer.toHexString(Byte.toUnsignedInt(bg_palette)) );
         }
 
 
@@ -261,11 +261,11 @@ public class PPU {
         bg_shifter_attrib_lo  =  ((bg_shifter_attrib_lo & 0xFF00) | (((bg_next_tile_attrib & 0b01)==1) ? 0xFF : 0x00))&0xffff;
         bg_shifter_attrib_hi  =  ((bg_shifter_attrib_hi & 0xFF00) | (((bg_next_tile_attrib & 0b10)==2) ? 0xFF : 0x00))&0xffff;
 
-        System.out.println("BG_SHIFTER_PATTERN_HI : "+ Integer.toBinaryString(bg_shifter_pattern_hi));
-        System.out.println("BG_SHIFTER_PATTERN_LO : "+ Integer.toBinaryString(bg_shifter_pattern_lo));
+        //System.out.println("BG_SHIFTER_PATTERN_HI : "+ Integer.toBinaryString(bg_shifter_pattern_hi));
+        //System.out.println("BG_SHIFTER_PATTERN_LO : "+ Integer.toBinaryString(bg_shifter_pattern_lo));
 
-        System.out.println("BG_SHIFTER_ATTRIBUTE_HI : "+ Integer.toBinaryString(bg_shifter_attrib_hi));
-        System.out.println("BG_SHIFTER_ATTRIBUTE_LO : "+ Integer.toBinaryString(bg_shifter_attrib_lo));
+        //System.out.println("BG_SHIFTER_ATTRIBUTE_HI : "+ Integer.toBinaryString(bg_shifter_attrib_hi));
+        //System.out.println("BG_SHIFTER_ATTRIBUTE_LO : "+ Integer.toBinaryString(bg_shifter_attrib_lo));
     }
 
     public void IncrementScrollX(){
@@ -284,7 +284,7 @@ public class PPU {
     public void IncrementScrollY(){
         int fine_y = (((V&0x7000) >> 12)&0x7);
         int coarse_y = (((V & 0x3e0)>>5) & 0x1f);
-        System.out.println("Coarse y is " +coarse_y);
+        //System.out.println("Coarse y is " +coarse_y);
         if(backgRenderingEnabled() || spriteRenderingEnabled()) {
             if (fine_y < 7) {
                 fine_y++;
@@ -301,8 +301,8 @@ public class PPU {
             V = ((V&0x0fff)| ((fine_y<<12)&0x7000) );  //set fine_y
             V = ((V&0x7c1f)| ((coarse_y<<5)&0x03e0) );  //set coarse_y
         }
-        System.out.println("Coarse y updated to " +coarse_y);
-        System.out.println("Incremented Scroll Y");
+        //System.out.println("Coarse y updated to " +coarse_y);
+        //System.out.println("Incremented Scroll Y");
     }
 
     public void flip_nametablex_bit(){
@@ -332,12 +332,12 @@ public class PPU {
     public int ppuRead(int addr){
         int addr_value = addr;
         addr_value  &= 0xffff;
-//        System.out.println("PPU Read Address is " + Integer.toHexString(addr));
+//        //System.out.println("PPU Read Address is " + Integer.toHexString(addr));
         if(addr_value <= 0x1fff){
             int pt_num = (addr & 0x1000) >> 12;
             int pt_offset = addr_value & 0x0fff;
-//            System.out.println("Returning value from Pt " + pt_num + " at address " + Integer.toHexString(pt_offset));
-//            System.out.println("Value returned is " + Integer.toHexString(patterntable[(addr_value & 0x1000) >> 12][addr_value & 0x0fff]));
+//            //System.out.println("Returning value from Pt " + pt_num + " at address " + Integer.toHexString(pt_offset));
+//            //System.out.println("Value returned is " + Integer.toHexString(patterntable[(addr_value & 0x1000) >> 12][addr_value & 0x0fff]));
             return patterntable[pt_num][addr_value & 0x0fff]&0xff;
         }
         else if(addr_value <= 0x2fff){
@@ -381,7 +381,7 @@ public class PPU {
     public void ppuWrite(short addr , byte data){
         int addr_value = Short.toUnsignedInt(addr);
         addr_value &= 0x3fff;
-        System.out.println("PPU Write address is " + Integer.toHexString(addr_value));
+        //System.out.println("PPU Write address is " + Integer.toHexString(addr_value));
         if(addr_value <= 0x1fff){
             patterntable[addr_value & 0x1000 >> 12][addr_value & 0x0fff] = data;
         }
@@ -457,8 +457,8 @@ public class PPU {
             case 0x2000:  //control
                 ppu_registers[Controller_Address-0x2000] = data;
                 T =  (((T&0xf3ff) | ((data & 0x3) << 10)) & 0x7fff) & 0xffff;
-                System.out.println("T is " + Integer.toHexString(T));
-                System.out.println("PPUControl is " + Integer.toHexString(Byte.toUnsignedInt(ppu_registers[0])));
+                //System.out.println("T is " + Integer.toHexString(T));
+                //System.out.println("PPUControl is " + Integer.toHexString(Byte.toUnsignedInt(ppu_registers[0])));
                 break;
             case 0x2001:  //mask
                 ppu_registers[1] = data;
@@ -474,7 +474,7 @@ public class PPU {
                 if(write_toggle==0){
                     T = ( ((T&0xffe0) | ((d >> 3)&0x1f) ) & 0x7fff) & 0xffff;
                     X =  (d & 0x07) & 0xff;
-                    System.out.println("X changed to  " + Integer.toHexString(X));
+                    //System.out.println("X changed to  " + Integer.toHexString(X));
                     write_toggle = 1;
                 }
                 else{
@@ -501,7 +501,7 @@ public class PPU {
 
             case 0x2007:  //ppu data
                 write_to_Data(data);
-                System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[0]));
+                //System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[0]));
                 if((ppu_registers[Controller_Address-0x2000] & 0x04) != 0){
 //                        read_location += 32;
                           V += 32;
@@ -530,12 +530,12 @@ public class PPU {
         ppu_registers[Address-0x2000] = (byte) (value & 0xff);
         if(address_latch==0) {
             read_location = ((value & 0xff)<<8)&0xff00;
-            System.out.println("Read Location High is set to " + Integer.toHexString(read_location & 0xfffff));
+            //System.out.println("Read Location High is set to " + Integer.toHexString(read_location & 0xfffff));
             address_latch = 1;
         }
         else {
             read_location += value & 0xff;
-            System.out.println("Read Low is set to " + Integer.toHexString(read_location & 0xffff));
+            //System.out.println("Read Low is set to " + Integer.toHexString(read_location & 0xffff));
             address_latch = 0;
         }
 //        update_status();
@@ -544,11 +544,11 @@ public class PPU {
     public void update_status(){
         if(getI()){
             ppu_registers[Status-0x2000] = (byte) ((ppu_registers[Controller_Address-0x2000]+ 32)&0xff);
-            System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[Controller_Address-0x2000]));
+            //System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[Controller_Address-0x2000]));
         }
         else{
             ppu_registers[Status-0x2000] = (byte) ((ppu_registers[Controller_Address-0x2000]+1)&0xff);
-            System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[Controller_Address-0x2000]));
+            //System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[Controller_Address-0x2000]));
         }
     }
 
@@ -579,28 +579,28 @@ public class PPU {
 //        int write_location = read_location;
         int write_location = V;
         ppuWrite((short) (write_location), (byte) (data & 0xff));
-        System.out.println("Wrote " + Integer.toHexString((data & 0xff)) + " to 0x" + Integer.toHexString(write_location));
+        //System.out.println("Wrote " + Integer.toHexString((data & 0xff)) + " to 0x" + Integer.toHexString(write_location));
     }
 
 
     public boolean backgRenderingEnabled(){
-        System.out.println("PPUMask : "+ Integer.toBinaryString(ppu_registers[Mask-0x2000]));
+        //System.out.println("PPUMask : "+ Integer.toBinaryString(ppu_registers[Mask-0x2000]));
         if((ppu_registers[Mask-0x2000] & 0x8) != 0){
-            System.out.println("Background Rendering is ON");
+            //System.out.println("Background Rendering is ON");
         }
         else{
-            System.out.println("Background Rendering is OFF");
+            //System.out.println("Background Rendering is OFF");
         }
         return ((ppu_registers[Mask-0x2000] & 0x8) != 0);
     }
 
     public boolean spriteRenderingEnabled(){
-        System.out.println("PPUMask : "+ Integer.toBinaryString(ppu_registers[Mask-0x2000]));
+        //System.out.println("PPUMask : "+ Integer.toBinaryString(ppu_registers[Mask-0x2000]));
         if((ppu_registers[Mask-0x2000] & 0x10) != 0){
-            System.out.println("Sprite Rendering is ON");
+            //System.out.println("Sprite Rendering is ON");
         }
         else{
-            System.out.println("Sprite Rendering is OFF");
+            //System.out.println("Sprite Rendering is OFF");
         }
         return ((ppu_registers[Mask-0x2000] & 0x10) != 0);
     }

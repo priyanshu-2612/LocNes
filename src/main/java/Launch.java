@@ -1,5 +1,6 @@
 package main.java;
 
+import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -18,7 +19,7 @@ import java.util.Arrays;
 
 
 public class Launch extends Application {
-    private static Timeline gameLoop;
+    private static AnimationTimer gameLoop;
     public static void main(String[] args){
         launch(args);
     }
@@ -115,26 +116,74 @@ public class Launch extends Application {
         });
 
         //TODO: Use gameloop
-        gameLoop = new Timeline();
-        gameLoop.setCycleCount(Timeline.INDEFINITE);
+        gameLoop = new AnimationTimer() {
+            private static double critical = 1790000.0 / 60.0;
+            private static final double FRAME_DURATION_NS = 1_000_000_000.0 / 60.0; // ~16.67ms in nanoseconds
+            private long lastTime = 0;
 
-        KeyFrame kf = new KeyFrame(
-                Duration.seconds(0.0001),
-                actionEvent -> {
-                    try {
-                        t.cycle();
-                        System.out.println(Arrays.toString(t.cpu.controller.controller_input));
-                        System.out.println("SIZE OF CANVAS IS " + stage.getWidth() + " " + stage.getHeight());
-                    } catch (RuntimeException e) {
-                        System.out.println("GAME OVER");
-                        e.printStackTrace();
-                        gameLoop.stop();
+            @Override
+            public void handle(long now) {
+                if (lastTime == 0) {
+                    lastTime = now;
+                    return;
+                }
+
+                long start = System.nanoTime();
+
+                try {
+                    double cycles = 0;
+                    while (cycles < critical) {
+                        cycles += t.cycle();
                     }
-                });
+                }
+                catch (RuntimeException e) {
+                    System.out.println("GAME OVER");
+                    e.printStackTrace();
+                    this.stop();
+                    return;
+                }
+                long elapsed = System.nanoTime() - start;
+                long sleepTimeNs = (long)(FRAME_DURATION_NS - elapsed);
 
-        gameLoop.getKeyFrames().add(kf);
+                if (sleepTimeNs > 0) {
+                    try {
+                        Thread.sleep(sleepTimeNs / 1_000_000, (int)(sleepTimeNs % 1_000_000));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
 
-        gameLoop.play();
+                lastTime = now;
+            }
+        };
+        gameLoop.start();
+
+        //Timeline is slow and not suitable fo NES
+
+//        gameLoop.setCycleCount(Timeline.INDEFINITE);
+//
+//        KeyFrame kf = new KeyFrame(
+//                Duration.seconds(0.0001),
+//                actionEvent -> {
+//                    try {
+//                        double critical = 1790000.0 / 60.0;
+//                        double cycles = 0;
+//
+//                        while (cycles < critical) {
+//                            cycles += t.cycle();
+//                        }
+//                        //System.out.println(Arrays.toString(t.cpu.controller.controller_input));
+//                        //System.out.println("SIZE OF CANVAS IS " + stage.getWidth() + " " + stage.getHeight());
+//                    } catch (RuntimeException e) {
+//                        System.out.println("GAME OVER");
+//                        e.printStackTrace();
+//                        gameLoop.stop();
+//                    }
+//                });
+//
+//        gameLoop.getKeyFrames().add(kf);
+//
+//        gameLoop.play();
 
     }
 }
