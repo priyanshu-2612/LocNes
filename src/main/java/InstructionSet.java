@@ -40,7 +40,8 @@ public class InstructionSet {
 
             case ZeropageIndexed:
 //                int val = cpu.cpu_memory[add(op , cpu.X)]; //changing
-                int val = cpu.getData(add(op , cpu.X));
+                int address = add(op , cpu.X)&0xff;
+                int val = cpu.getData(address);
                 sum = add(val , (byte) (cpu.Status%2));
                 sum = add(sum, cpu.Accumulator);
                 setFlags(sum, flags);
@@ -144,7 +145,9 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
-                val = cpu.cpu_memory[cpu.X+Byte.toUnsignedInt(op)] & cpu.Accumulator;
+                int address = cpu.X+Byte.toUnsignedInt(op);
+                address &= 0xff;
+                val = cpu.cpu_memory[address] & cpu.Accumulator;
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
@@ -235,7 +238,8 @@ public class InstructionSet {
                 return 5;
 
             case ZeropageIndexed:
-                val = cpu.cpu_memory[add(op, cpu.X)]&0xff;
+                int address = add(op, cpu.X)&0xff;
+                val = cpu.cpu_memory[address]&0xff;
                 carry = ((val&0x80) == 0x80) ? 1: 0;
                 val = (val << 1)&0xff;
                 setFlags(val, flags);
@@ -527,7 +531,8 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
-                val = cpu.cpu_memory[add(cpu.X, op)];
+                int address = add(op, cpu.X)&0xff;
+                val = cpu.cpu_memory[address];
 //                if(val==acc) setZero();
 //                else clearZero();
 //
@@ -768,7 +773,7 @@ public class InstructionSet {
 
             case ZeropageIndexed:
 //                loc = Byte.toUnsignedInt(cpu.cpu_memory[add(op, cpu.X)]);
-                loc = add(op,cpu.X);
+                loc = add(op,cpu.X)&0xff;
 //                cpu.cpu_memory[loc] = (byte) sub(cpu.cpu_memory[loc],1);
                 cpu.writeTo(loc,(byte) sub(cpu.cpu_memory[loc],1) );
                 setFlags(add(cpu.cpu_memory[loc],0) , flags);
@@ -852,7 +857,8 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.X)]);
+                int address = add(op, cpu.X)&0xff;
+                val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 res = cpu.Accumulator ^ val;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
@@ -931,7 +937,8 @@ public class InstructionSet {
                 return 5;
 
             case ZeropageIndexed:
-                val = cpu.cpu_memory[add(op, cpu.X)];
+                int address = add(op, cpu.X)&0xff;
+                val = cpu.cpu_memory[address];
                 res = (val + 1)&0xff;
                 setFlags(res, flags);
 //                cpu.cpu_memory[add(op, cpu.X)] = (byte)res;
@@ -1080,7 +1087,8 @@ public class InstructionSet {
 //                    return 4;
 //                }
 //                val = cpu.cpu_memory[add(cpu.X, op)];
-                val = cpu.getData(add(cpu.X,op));
+                int address = add(op, cpu.X)&0xff;
+                val = cpu.getData(address);
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
@@ -1223,7 +1231,8 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(cpu.Y, op)]);
+                int address = add(op, cpu.Y)&0xff;
+                val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 setFlags(val, flags);
                 cpu.X = (byte) val;
                 cpu.PC += 2;
@@ -1278,7 +1287,8 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(cpu.X, op)]);
+                int address = add(op, cpu.X)&0xff;
+                val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 setFlags(val, flags);
                 cpu.Y = (byte) val;
                 cpu.PC += 2;
@@ -1341,7 +1351,8 @@ public class InstructionSet {
                 return 5;
 
             case ZeropageIndexed:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op, cpu.X)]);
+                int address = add(op, cpu.X)&0xff;
+                val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 carry = val%2;
                 val >>= 1;
                 setFlags(val , flags);
@@ -1412,7 +1423,8 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[cpu.X+Byte.toUnsignedInt(op)]) | cpu.Accumulator;
+                int address = add(op, cpu.X)&0xff;
+                val = Byte.toUnsignedInt(cpu.cpu_memory[address]) | cpu.Accumulator;
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
@@ -1551,7 +1563,8 @@ public class InstructionSet {
                 return 5;
 
             case ZeropageIndexed:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.X)]);
+                int address = add(op, cpu.X)&0xff;
+                val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 carry = ((val & 0x80) != 0) ? 1 : 0;
                 val <<= 1;
                 if(getCarry())
@@ -1652,7 +1665,8 @@ public class InstructionSet {
                 return 5;
 
             case ZeropageIndexed:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.X)]);
+                int address = add(op, cpu.X)&0xff;
+                val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 carry = val%2;
                 val >>= 1;
                 if(getCarry())
@@ -1820,8 +1834,9 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
+                int address = add(op, cpu.X)&0xff;
                 val = Byte.toUnsignedInt(cpu.Accumulator);
-                val -= Byte.toUnsignedInt(cpu.cpu_memory[add(cpu.X, op)]);
+                val -= Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 if(!getCarry())
                     val--;
                 setFlags(val , flags);
@@ -1939,7 +1954,7 @@ public class InstructionSet {
 
             case ZeropageIndexed:
 //              loc = Byte.toUnsignedInt((byte) (cpu.cpu_memory[add(op , cpu.X)] & 0xff)) ;
-                loc = add(op,cpu.X);
+                loc = add(op,cpu.X)&0xff;
 //                if(0x2000 <= loc && loc <= 0x2007){
 //                    ppu.cpuWrite((short) loc, cpu.Accumulator);
 //                    cpu.PC += 2;
@@ -2040,7 +2055,8 @@ public class InstructionSet {
 
             case ZeropageIndexed:
 //                cpu.cpu_memory[add(op , cpu.X)] = cpu.X;
-                cpu.writeTo(add(op , cpu.X), cpu.X);
+                int address = add(op, cpu.Y)&0xff;
+                cpu.writeTo(address, cpu.X);
                 cpu.PC += 2;
                 return 4;
 
@@ -2070,7 +2086,8 @@ public class InstructionSet {
 
             case ZeropageIndexed:
 //                cpu.cpu_memory[add(op , cpu.X)] = cpu.Y;
-                cpu.writeTo(add(op , cpu.X), cpu.Y);
+                int address = add(op, cpu.X)&0xff;
+                cpu.writeTo(address, cpu.Y);
                 cpu.PC += 2;
                 return 4;
 
