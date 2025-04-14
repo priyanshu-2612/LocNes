@@ -8,7 +8,7 @@ public class InstructionSet {
     CPU cpu;
     PPU ppu;
 
-    InstructionSet(CPU cpu, PPU ppu){
+    public InstructionSet(CPU cpu, PPU ppu){
         this.cpu = cpu;
         this.ppu = ppu;
     }
@@ -412,6 +412,7 @@ public class InstructionSet {
     public int brk(addressingMode A){
 //        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = (byte) (cpu.PC >>> 8); //PC High
 //        cpu.SP = (byte) (sub(cpu.SP , 1) & 0xff);
+        cpu.PC  += 2; // guesss so
         cpu.push((byte) ((cpu.PC >> 8)&0xff));
 
 //        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = (byte) (cpu.PC); //PC Low
@@ -423,8 +424,10 @@ public class InstructionSet {
 //        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = cpu.Status;
 //        cpu.SP = (byte) (sub(cpu.SP , 1) & 0xff);
         cpu.push(cpu.Status);
+        System.out.println("Status pushed was " + (cpu.Status&0xff));
 
-        int loc = (cpu.cpu_memory[0xffff] << 8) + cpu.cpu_memory[0xfffe];
+        int loc = ((cpu.cpu_memory[0xffff] << 8)&0xff00) + cpu.cpu_memory[0xfffe];
+        System.out.println("pc is " + loc);
         cpu.PC = (short) loc;
         return 7;
     }
@@ -818,10 +821,12 @@ public class InstructionSet {
     public int dex(addressingMode A){
         boolean[] flags = {false , false, true , true};
         //System.out.println("X is " + Byte.toUnsignedInt(cpu.X));
-        cpu.X = (byte) sub(cpu.X, 1);
+//        cpu.X = (byte) sub(cpu.X, 1);
+        cpu.X = (byte) ((cpu.X&0xff)-1);
         //System.out.println("X is now " + Byte.toUnsignedInt(cpu.X));
 
         setFlags(Byte.toUnsignedInt(cpu.X) , flags);
+//        setFlags((cpu.X&0xff) , flags);
         cpu.PC += 1;
         return 2;
     }
@@ -1485,11 +1490,8 @@ public class InstructionSet {
     }
 
     public int pha(addressingMode A){
-//        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = cpu.Accumulator;
-//        cpu.SP = (byte) (sub(cpu.SP,1) & 0xff);
         cpu.push(cpu.Accumulator);
         cpu.PC += 1;
-        //System.out.println("Running PHA");
         return 3;
     }
 
@@ -2175,45 +2177,24 @@ public class InstructionSet {
         return (short) ((int) A <<8 + (int) A >>8); //addition promotes shorts/bytes to int
     }
     public void setOverflow(){
-//      int a = Byte.toUnsignedInt(cpu.Status);
-//      if((a>>6)%2==0) cpu.Status = (byte) add(0b01000000 , cpu.Status);
-        //System.out.println("Setting V flag");
         cpu.Status = (byte) ((cpu.Status | 0x40) & 0xff);
     }
     public void setNegative(){
-        //int a = Byte.toUnsignedInt(cpu.Status);
-        //if((a>>7)%2==0) cpu.Status = (byte) add(cpu.Status, 128);
-        //System.out.println("Setting N flag");
-        //System.out.println("Status is "+ Integer.toBinaryString(Byte.toUnsignedInt(cpu.Status)));
         cpu.Status = (byte) ((cpu.Status | 0x80) & 0xff);
-        //System.out.println("Status is "+ Integer.toBinaryString(Byte.toUnsignedInt(cpu.Status)));
     }
     private void setBreak() {
-//        int a = Byte.toUnsignedInt(cpu.Status);
-//        if((a>>2)%2==0) cpu.Status = (byte) add(0b00000100 , cpu.Status);
           cpu.Status = (byte) ((cpu.Status | 0x10) & 0xff);
     }
     public void setZero(){
-//      int a = Byte.toUnsignedInt(cpu.Status);
-//      if((a>>1)%2==0) cpu.Status = (byte) add(0b00000010 , cpu.Status);
-        //System.out.println("Setting Z flag");
         cpu.Status = (byte) ((cpu.Status | 0x2) & 0xff);
     }
     private void setDecimal() {
-//        int a = Byte.toUnsignedInt(cpu.Status);
-//        if((a>>3)%2==0) cpu.Status = (byte) add(cpu.Status, 0b00001000);
           cpu.Status = (byte) ((cpu.Status | 0x8) & 0xff);
     }
     public void setCarry(){
-//        int a = Byte.toUnsignedInt(cpu.Status);
-//        if(a%2==0) cpu.Status = (byte) add(0b00000001, cpu.Status);
-        //System.out.println("Setting D flag");
         cpu.Status = (byte) ((cpu.Status | 0x1) & 0xff);
     }
     public void clearOverflow(){
-//        int a = Byte.toUnsignedInt(cpu.Status);
-//        if((a>>6)%2==1) cpu.Status = (byte) sub(cpu.Status,0b01000000 );
-        //System.out.println("Clearing overflow flag");
         cpu.Status = (byte) (cpu.Status & 0xbf);
     }
     public void clearNegative(){
@@ -2221,9 +2202,6 @@ public class InstructionSet {
         if((a>>7)%2==1) cpu.Status = (byte) sub(cpu.Status, 128);
     }
     public void clearZero(){
-//        int a = Byte.toUnsignedInt(cpu.Status);
-//        if((a>>1)%2==1) cpu.Status = (byte) sub(cpu.Status , 0b00000010);
-//        a = Byte.toUnsignedInt(cpu.Status);
         cpu.Status = (byte) (cpu.Status & 0xfd);
     }
     private void clearDecimal() {
@@ -2278,8 +2256,10 @@ public class InstructionSet {
         if(flags[1] && (sum<=127 && sum>=-127) && getOverflow()) clearOverflow();
         if(flags[3] && (sum!=0 && sum!=256) && getZero()) clearZero();
 
-        if(((sum & 0x80) >> 7)==1) setNegative();
-        else clearNegative();
+        if(flags[2]){
+            if(((sum & 0x80) >> 7)==1) setNegative();
+            else clearNegative();
+        }
     }
 
     public void dump_at(int a){

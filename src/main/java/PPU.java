@@ -625,7 +625,7 @@ public class PPU {
         return loc;
     }
 
-    PPU(){
+    public PPU(){
         palScreen[0x00] = new Color(84, 84, 84);
         palScreen[0x01] = new Color(0, 30, 116);
         palScreen[0x02] = new Color(8, 16, 144);
