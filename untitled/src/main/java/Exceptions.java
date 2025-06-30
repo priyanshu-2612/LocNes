@@ -1,2 +1,0 @@
-class OpcodeException extends RuntimeException{
-}
