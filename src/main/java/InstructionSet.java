@@ -1,8 +1,5 @@
 package main.java;
 
-import javax.swing.plaf.synth.SynthOptionPaneUI;
-import java.sql.SQLOutput;
-
 public class InstructionSet {
 
     CPU cpu;
@@ -27,19 +24,15 @@ public class InstructionSet {
 
             case ZeropageAbs:
                 dump_at(0);
-                //System.out.println("Added value is " + Integer.toHexString(cpu.getData(Byte.toUnsignedInt(op))));
-                sum = add((cpu.getData(Byte.toUnsignedInt(op)) & 0xff), (byte) (Byte.toUnsignedInt(cpu.Status)%2));// here 2
-//                sum = add(cpu.cpu_memory[Byte.toUnsignedInt(op)] , Byte.toUnsignedInt(cpu.Status)%2); //changing
+                sum = add((cpu.getData(Byte.toUnsignedInt(op)) & 0xff), (byte) (Byte.toUnsignedInt(cpu.Status)%2));
                 sum = add(sum, cpu.Accumulator);
                 setFlags(sum , flags);
-                checkAndSet(add(cpu.Accumulator,0), cpu.cpu_memory[Byte.toUnsignedInt(op)]&0xff , sum);//changing
-                //System.out.println("Sum is " + sum);
+                checkAndSet(add(cpu.Accumulator,0), cpu.cpu_memory[Byte.toUnsignedInt(op)]&0xff , sum);
                 cpu.Accumulator = (byte) sum;
                 cpu.PC += 2;
                 return 3;
 
             case ZeropageIndexed:
-//                int val = cpu.cpu_memory[add(op , cpu.X)]; //changing
                 int address = add(op , cpu.X)&0xff;
                 int val = cpu.getData(address);
                 sum = add(val , (byte) (cpu.Status%2));
@@ -53,7 +46,12 @@ public class InstructionSet {
             case PreIndirectX:
                 loc = add(op , cpu.X);
                 loc = loc&0xff;
-                addr = ( (cpu.cpu_memory[(loc+1)&0xff]<<8)&0xff00) + (cpu.cpu_memory[loc]&0x00ff); // converting into little endian
+//                addr = ( (cpu.cpu_memory[(loc+1)&0xff]<<8)&0xff00) + (cpu.cpu_memory[loc]&0x00ff); // converting into little endian
+                int lowByte = cpu.getData(loc & 0xFF) & 0xFF;
+                int highByte = cpu.getData((loc + 1) & 0xFF) & 0xFF;
+                addr = (highByte << 8) | lowByte;
+
+
                 sum = add(cpu.cpu_memory[addr&0xffff] , (byte) (cpu.Status%2));
 //                sum = add(cpu.getData(addr&0xfff) , (byte) (cpu.Status%2));
                 sum = add(sum, cpu.Accumulator);
@@ -64,7 +62,11 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-                addr = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
+//                addr = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
+                lowByte = cpu.getData(op & 0xFF) & 0xFF;
+                highByte = cpu.getData(((op&0xff) + 1) & 0xFF) & 0xFF;
+                addr = (highByte << 8) | lowByte;
+
                 addr = add(cpu.Y, addr);
                 sum = add(cpu.cpu_memory[addr], cpu.Status%2);
                 sum = add(sum, cpu.Accumulator);
@@ -88,7 +90,7 @@ public class InstructionSet {
         boolean[] flags = {true , true , true , true};
         switch(A){
             case Absolute:
-                sum = add(cpu.cpu_memory[Short.toUnsignedInt(op)], (byte) (cpu.Status%2));
+                sum = add(cpu.getData(op), (byte) (cpu.Status%2));
                 sum = add(sum, cpu.Accumulator);
                 setFlags(sum ,flags);
                 checkAndSet(add(cpu.Accumulator,0),add(cpu.cpu_memory[Short.toUnsignedInt(op)], 0) , sum);
@@ -156,7 +158,10 @@ public class InstructionSet {
             case PreIndirectX:
                 loc = add(op , cpu.X);
                 loc = loc&0xff;
-                addr = (cpu.cpu_memory[(loc+1)&0xff]<<8) + cpu.cpu_memory[loc];
+                int lowByte = cpu.getData(loc & 0xFF) & 0xFF;
+                int highByte = cpu.getData((loc + 1) & 0xFF) & 0xFF;
+                addr = (highByte << 8) | lowByte;
+
                 val = cpu.Accumulator & cpu.cpu_memory[addr];
                 setFlags(val , flags);
                 cpu.Accumulator = (byte) val;
@@ -164,7 +169,10 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-                addr = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[(Byte.toUnsignedInt(op))&0xff];
+                lowByte = cpu.getData(op & 0xFF) & 0xFF;
+                highByte = cpu.getData(((op&0xff) + 1) & 0xFF) & 0xFF;
+                addr = (highByte << 8) | lowByte;
+
                 addr = add(cpu.Y, addr);
                 val = cpu.cpu_memory[addr] & cpu.Accumulator;
                 setFlags(val , flags);
@@ -549,7 +557,10 @@ public class InstructionSet {
             case PreIndirectX:
                 loc = add(op , cpu.X);
                 loc = loc&0xff;
-                addr = (cpu.cpu_memory[(loc+1)&0xff]<<8) + cpu.cpu_memory[loc];
+                int lowByte = cpu.getData(loc & 0xFF) & 0xFF;
+                int highByte = cpu.getData((loc + 1) & 0xFF) & 0xFF;
+                addr = (highByte << 8) | lowByte;
+
                 val = cpu.cpu_memory[addr];
 //                if(val==acc) setZero();
 //                else clearZero();
@@ -565,7 +576,10 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-                loc = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8 )+ cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
+                lowByte  = cpu.getData(op & 0xFF) & 0xFF;
+                highByte = cpu.getData((op + 1) & 0xFF) & 0xFF;
+                loc     = (highByte << 8) | lowByte;
+
                 val = cpu.cpu_memory[add(loc , cpu.Y)];
                 //System.out.println("Address is " + Integer.toHexString(loc) + " ");
 //                if(val==acc) setZero();
@@ -869,7 +883,6 @@ public class InstructionSet {
 
             case PreIndirectX:
                 int addr = add(cpu.X,op) & 0xff;
-//                loc = (cpu.cpu_memory[(addr+1)&0xff] <<8) + cpu.cpu_memory[addr];
                 int low = cpu.getData(addr & 0xFF) & 0xFF;
                 int high = cpu.getData((addr + 1) & 0xFF) & 0xFF;
                 loc = (high << 8) | low;
@@ -881,7 +894,11 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-                loc = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
+//                loc = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
+                high = (cpu.getData((op + 1) & 0xFF) & 0xFF) << 8;
+                low  = cpu.getData(op & 0xFF) & 0xFF;
+                loc  = high | low;
+
                 val = Byte.toUnsignedInt(cpu.cpu_memory[add(loc, cpu.Y)]);
                 res = cpu.Accumulator ^ val;
                 cpu.Accumulator = (byte) (res);
@@ -1021,7 +1038,9 @@ public class InstructionSet {
                 int op_value = Short.toUnsignedInt(op);
                 int op_high = op_value&0xff00;
                 int op_low = op_value&0xff;
-                val_high = (cpu.cpu_memory[op_high + ((op_low+1)&0xff)]<<8)&0xff00;
+//                val_high = (cpu.cpu_memory[op_high + ((op_low+1)&0xff)]<<8)&0xff00;
+                int index = (op_low + 1) & 0xFF;
+                val_high = (cpu.getData((op_high + index) & 0xFFFF) & 0xFF) << 8;
                 val_low = cpu.cpu_memory[Short.toUnsignedInt(op)]&0xff;
                 val = val_high + val_low;
                 dump_at(((op_value+1)&op_value)-5);
@@ -1426,7 +1445,10 @@ public class InstructionSet {
             case PreIndirectX:
                 loc = add(op , cpu.X);
                 loc = loc&0xff;
-                addr = (cpu.cpu_memory[(loc+1)&0xff]<<8) + cpu.cpu_memory[loc];
+//                addr = (cpu.cpu_memory[(loc+1)&0xff]<<8) + cpu.cpu_memory[loc];
+                int low  = cpu.getData(loc & 0xFF) & 0xFF;
+                int high = cpu.getData((loc + 1) & 0xFF) & 0xFF;
+                addr = (high << 8) + low;
                 val = cpu.Accumulator | cpu.cpu_memory[addr];
                 setFlags(val , flags);
                 cpu.Accumulator = (byte) val;
@@ -1434,7 +1456,11 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-                addr = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
+//                addr = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
+                low  = cpu.cpu_memory[op & 0xFF] & 0xFF;
+                high = cpu.cpu_memory[(op + 1) & 0xFF] & 0xFF;
+                addr = (high << 8) + low;
+
                 addr = add(cpu.Y, addr);
                 val = Byte.toUnsignedInt(cpu.cpu_memory[addr]) | cpu.Accumulator;
                 setFlags(val , flags);
@@ -1987,7 +2013,11 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-                loc = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8 + (cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff] & 0xff));
+//                loc = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8 + (cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff] & 0xff));
+                int low  = cpu.cpu_memory[op & 0xFF] & 0xFF;
+                int high = cpu.cpu_memory[(op + 1) & 0xFF] & 0xFF;
+                loc = (high << 8) + low;
+
 //                val = Byte.toUnsignedInt((byte) (cpu.cpu_memory[add(loc, cpu.X)] & 0xff));
 //                cpu.cpu_memory[val] = cpu.Accumulator;
                 loc = add(loc,cpu.Y);
