@@ -99,9 +99,13 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-                loc = add(op, cpu.X);
-                sum = add(cpu.cpu_memory[loc] , cpu.Status%2);
-                sum = add(sum, cpu.Accumulator);
+//                loc = add(op, cpu.X);
+//                sum = add(cpu.cpu_memory[loc] , cpu.Status%2);
+//                sum = add(sum, cpu.Accumulator);
+
+                loc = (op & 0xffff) + (cpu.X & 0xff);
+                sum = cpu.getData(loc) + (cpu.Status & 0x01) + (cpu.Accumulator & 0xff);
+
                 setFlags(sum, flags);
                 checkAndSet(add(cpu.Accumulator,0),add(cpu.cpu_memory[loc], 0) , sum);
                 cpu.Accumulator = (byte) sum;
@@ -109,9 +113,13 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteY:
-                loc = add(op, cpu.Y);
-                sum = add(cpu.cpu_memory[loc] , cpu.Status%2);
-                sum = add(sum, cpu.Accumulator);
+//                loc = add(op, cpu.Y);
+//                sum = add(cpu.cpu_memory[loc] , cpu.Status%2);
+//                sum = add(sum, cpu.Accumulator);
+
+                loc = (op & 0xffff) + (cpu.Y & 0xff);
+                sum = cpu.getData(loc) + (cpu.Status & 0x01) + (cpu.Accumulator & 0xff);
+
                 setFlags(sum , flags);
                 checkAndSet(add(cpu.Accumulator,0),add(cpu.cpu_memory[loc], 0) , sum);
                 cpu.Accumulator = (byte) sum;
@@ -1325,7 +1333,8 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(cpu.X, op)]);
+//                val = Byte.toUnsignedInt(cpu.cpu_memory[add(cpu.X, op)]);
+                val = cpu.getData((cpu.X & 0xff) + (op & 0xffff));
                 setFlags(val, flags);
                 cpu.Y = (byte) val;
                 cpu.PC += 3;
