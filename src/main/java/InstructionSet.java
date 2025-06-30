@@ -205,14 +205,16 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-                val = cpu.cpu_memory[add(op , cpu.X)] & cpu.Accumulator;
+//                val = cpu.cpu_memory[add(op , cpu.X)] & cpu.Accumulator;
+                val = cpu.getData((op & 0xffff) + (cpu.X & 0xff)) & cpu.Accumulator;
                 setFlags(val , flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 3;
                 return 4;
 
             case AbsoluteY:
-                val = cpu.cpu_memory[add(op , cpu.Y)] & cpu.Accumulator;
+//                val = cpu.cpu_memory[add(op , cpu.Y)] & cpu.Accumulator;
+                val = cpu.getData((op & 0xffff) + (cpu.Y & 0xff)) & cpu.Accumulator;
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 3;
@@ -290,7 +292,7 @@ public class InstructionSet {
                 return 6;
 
             case AbsoluteX:
-                addr = add(op, cpu.X);
+                addr = addShort(op, cpu.X);
                 val = cpu.cpu_memory[addr]&0xff;
                 carry = ((val & 0x80) == 0x80) ? 1 : 0;
                 val = (val << 1) & 0xff;
@@ -588,7 +590,8 @@ public class InstructionSet {
                 highByte = cpu.getData((op + 1) & 0xFF) & 0xFF;
                 loc     = (highByte << 8) | lowByte;
 
-                val = cpu.cpu_memory[add(loc , cpu.Y)];
+//                val = cpu.cpu_memory[add(loc , cpu.Y)];
+                val = cpu.getData(loc + (cpu.Y & 0xff));
                 //System.out.println("Address is " + Integer.toHexString(loc) + " ");
 //                if(val==acc) setZero();
 //                else clearZero();
@@ -788,7 +791,9 @@ public class InstructionSet {
                 loc = Byte.toUnsignedInt(op);
                 //System.out.println("The val at " + loc + " is " + Byte.toUnsignedInt(cpu.cpu_memory[loc]));
 //                cpu.cpu_memory[loc] = (byte) sub(cpu.cpu_memory[loc],1);
+
                 cpu.writeTo(loc, (byte) sub(cpu.cpu_memory[loc],1) );
+
                 //System.out.println("And now it is " + Byte.toUnsignedInt(cpu.cpu_memory[loc]));
                 setFlags(add(cpu.cpu_memory[loc],0) , flags);
                 cpu.PC += 2;
@@ -909,7 +914,8 @@ public class InstructionSet {
                 low  = cpu.getData(op & 0xFF) & 0xFF;
                 loc  = high | low;
 
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(loc, cpu.Y)]);
+//                val = Byte.toUnsignedInt(cpu.cpu_memory[add(loc, cpu.Y)]);
+                val = cpu.getData(loc + (cpu.Y & 0xff));
                 res = cpu.Accumulator ^ val;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
@@ -1121,7 +1127,7 @@ public class InstructionSet {
 //                    return 4;
 //                }
 //                val = cpu.cpu_memory[add(cpu.X, op)];
-                int address = add(op, cpu.X)&0xff;
+                int address = add(op&0xff, cpu.X)&0xff;
                 val = cpu.getData(address);
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
@@ -1253,7 +1259,7 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
-                int address = add(op, cpu.Y)&0xff;
+                int address = add(op&0xff, cpu.Y)&0xff;
                 val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 setFlags(val, flags);
                 cpu.X = (byte) val;
@@ -1309,7 +1315,7 @@ public class InstructionSet {
                 return 3;
 
             case ZeropageIndexed:
-                int address = add(op, cpu.X)&0xff;
+                int address = add(op&0xff, cpu.X)&0xff;
                 val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 setFlags(val, flags);
                 cpu.Y = (byte) val;
@@ -1374,7 +1380,7 @@ public class InstructionSet {
                 return 5;
 
             case ZeropageIndexed:
-                int address = add(op, cpu.X)&0xff;
+                int address = add(op&0xff, cpu.X)&0xff;
                 val = Byte.toUnsignedInt(cpu.cpu_memory[address]);
                 carry = val%2;
                 val >>= 1;
@@ -1406,13 +1412,14 @@ public class InstructionSet {
                 return 6;
 
             case AbsoluteX:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op ,cpu.X)]);
+//                val = Byte.toUnsignedInt(cpu.cpu_memory[addShort(op ,cpu.X)]);
+                val = cpu.getData(addShort(op ,cpu.X));
                 carry = val%2;
                 val >>= 1;
                 setFlags(val , flags);
                 cpu.Status |= (byte) carry;
 //                cpu.cpu_memory[add(op , cpu.X)] = (byte)val;
-                cpu.writeTo(add(op , cpu.X), (byte) val);
+                cpu.writeTo(addShort(op , cpu.X), (byte) val);
                 cpu.PC += 3;
                 return 7;
 
@@ -1496,14 +1503,16 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.X)]) | cpu.Accumulator;
+//                val = Byte.toUnsignedInt(cpu.cpu_memory[addShort(op , cpu.X)]) | cpu.Accumulator;
+                val = cpu.getData(addShort(op , cpu.X)) | cpu.Accumulator;
                 setFlags(val , flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 3;
                 return 4;
 
             case AbsoluteY:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.Y)]) | cpu.Accumulator;
+//                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.Y)]) | cpu.Accumulator;
+                val = cpu.getData(addShort(op , cpu.Y)) | cpu.Accumulator;
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 3;
@@ -1632,7 +1641,8 @@ public class InstructionSet {
                 return 6;
 
             case AbsoluteX:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.X)]);
+//                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.X)]);
+                val = cpu.getData(addShort(op, cpu.X));
                 carry = ((val & 0x80) != 0) ? 1 : 0;
                 val <<= 1;
                 if(getCarry())
@@ -1643,7 +1653,7 @@ public class InstructionSet {
                 setFlags(val,flags);
                 cpu.Status |= (byte) carry;
 //                cpu.cpu_memory[add(op , cpu.X)] = (byte) val;
-                cpu.writeTo(add(op , cpu.X), (byte) val);
+                cpu.writeTo(addShort(op , cpu.X), (byte) val);
                 cpu.PC += 3;
                 return 7;
 
@@ -1734,7 +1744,8 @@ public class InstructionSet {
                 return 6;
 
             case AbsoluteX:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[add(op , cpu.X)]);
+//                val = Byte.toUnsignedInt(cpu.cpu_memory[addShort(op , cpu.X)]);
+                val = cpu.getData(addShort(op , cpu.X));
                 carry = val%2;
                 val >>= 1;
                 if(getCarry())
@@ -1745,7 +1756,7 @@ public class InstructionSet {
                 setFlags(val,flags);
                 cpu.Status |= (byte) carry;
 //                cpu.cpu_memory[add(op , cpu.X)] = (byte) val;
-                cpu.writeTo(add(op , cpu.X) , (byte) val);
+                cpu.writeTo(addShort(op , cpu.X) , (byte) val);
                 cpu.PC += 3;
                 return 7;
 
@@ -2060,22 +2071,22 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-                loc = add(op , cpu.X);
+                loc = addShort(op , cpu.X);
 //                cpu.cpu_memory[add(op , cpu.X)] = cpu.Accumulator;
-                cpu.writeTo(add(op , cpu.X) , cpu.Accumulator);
+                cpu.writeTo(addShort(op , cpu.X) , cpu.Accumulator);
                 cpu.PC += 3;
                 dump_at(0);
                 return 5;
 
             case AbsoluteY:
-                loc = add(op , cpu.Y);
+                loc = addShort(op , cpu.Y);
 //                if(0x2000 <= loc && loc <= 0x2007){
 //                    ppu.cpuWrite(op, cpu.Accumulator);
 //                    cpu.PC += 3;
 //                    return 5;
 //                }
 //                cpu.cpu_memory[add(op , cpu.Y)] = cpu.Accumulator;
-                cpu.writeTo(add(op , cpu.Y),cpu.Accumulator);
+                cpu.writeTo(addShort(op , cpu.Y),cpu.Accumulator);
                 cpu.PC += 3;
                 dump_at(0);
                 return 5;
@@ -2201,6 +2212,10 @@ public class InstructionSet {
 
     public int add(byte a , int b){
         return ((b + Byte.toUnsignedInt(a)));
+    }
+
+    public int addShort(short a, int b){
+        return ((a&0xffff) + (b&0xff)) & 0xffff;
     }
     public int sub(byte a , byte b){
         return Byte.toUnsignedInt(a) - Byte.toUnsignedInt(b);
