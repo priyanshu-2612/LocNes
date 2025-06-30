@@ -619,7 +619,8 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-                val = cpu.cpu_memory[add(cpu.X, op)];
+//                val = cpu.cpu_memory[add(cpu.X, op)];
+                val = cpu.getData((cpu.X&0xff) + (op&0xffff));
 //                if(val==acc) setZero();
 //                else clearZero();
 //
@@ -634,7 +635,8 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteY:
-                val = cpu.cpu_memory[add(cpu.Y, op)];
+//                val = cpu.cpu_memory[add(cpu.Y, op)];
+                val = cpu.getData((cpu.Y&0xff) + (op&0xffff));
 //                if(val==acc) setZero();
 //                else clearZero();
 //
