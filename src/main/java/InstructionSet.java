@@ -410,23 +410,20 @@ public class InstructionSet {
     }
 
     public int brk(addressingMode A){
-//        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = (byte) (cpu.PC >>> 8); //PC High
-//        cpu.SP = (byte) (sub(cpu.SP , 1) & 0xff);
         cpu.PC  += 2; // guesss so
         cpu.push((byte) ((cpu.PC >> 8)&0xff));
 
-//        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = (byte) (cpu.PC); //PC Low
-//        cpu.SP = (byte) (sub(cpu.SP , 1) & 0xff);
         cpu.push((byte) ((cpu.PC)&0xff));
 
         setBreak();
 
-//        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = cpu.Status;
-//        cpu.SP = (byte) (sub(cpu.SP , 1) & 0xff);
         cpu.push(cpu.Status);
         System.out.println("Status pushed was " + (cpu.Status&0xff));
 
-        int loc = ((cpu.cpu_memory[0xffff] << 8)&0xff00) + cpu.cpu_memory[0xfffe];
+        int lo = cpu.cpu_memory[0xFFFE] & 0xFF;
+        int hi = cpu.cpu_memory[0xFFFF] & 0xFF;
+        int loc = (hi << 8) | lo;
+
         System.out.println("pc is " + loc);
         cpu.PC = (short) loc;
         return 7;

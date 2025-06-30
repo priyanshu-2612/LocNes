@@ -33,8 +33,8 @@ public class CPU {
 
     public void writeTo(int index, byte data){
         index = index & 0xffff;
-        if(index <= 0x07ff){
-            cpu_memory[index] = data;
+        if(index <= 0x1fff){
+            cpu_memory[index&0x07ff] = data;
         }
         else if(index >= 0x2000 && index <= 0x3fff){
             index = 0x2000 + (index&0x0007);
@@ -56,7 +56,7 @@ public class CPU {
         }
         else if(index <= 0x3fff && index >= 0x2000){
             index = 0x2000 + (index&0x0007);
-            return ppu.cpuRead((short) ((index)&0xffff));
+            return ppu.cpuRead((short) ((index)&0xffff))&0xff;
         }
         else if(index >= 0x4016 && index <= 0x4017){
             int bit = (shift_register_4021[index&0x0001] & 0x80) != 0 ? 1 : 0;

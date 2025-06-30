@@ -37,6 +37,7 @@ public class PPU {
     int bg_next_tile_id=0;
     boolean nmi = false;
     CPU cpu;
+    boolean testMode = false;
 
     public void cycle(){
 
@@ -439,8 +440,12 @@ public class PPU {
             case 0x2004:  //OAM data
                 return ppu_registers[addr_value-0x2000];
             case 0x2005:  //scroll
+                if(testMode)
+                    return ppu_registers[addr_value - 0x2000];
                 break;
             case 0x2006:  //ppu address
+                if(testMode)
+                    return ppu_registers[addr_value - 0x2000];
                 break;
             case 0x2007:  //ppu data
                 return (byte) read_from_Data();
@@ -464,12 +469,20 @@ public class PPU {
                 ppu_registers[1] = data;
                 break;
             case 0x2002:  //status
+                if(testMode)
+                    ppu_registers[addr_value - 0x2000] = data;
                 break;
             case 0x2003:  //OAM address
+                if(testMode)
+                    ppu_registers[addr_value - 0x2000] = data;
                 break;
             case 0x2004:  //OAM data
+                if(testMode)
+                    ppu_registers[addr_value - 0x2000] = data;
                 break;
             case 0x2005:  //scroll
+                if(testMode)
+                    ppu_registers[addr_value - 0x2000] = data;
                 int d = data & 0xff;
                 if(write_toggle==0){
                     T = ( ((T&0xffe0) | ((d >> 3)&0x1f) ) & 0x7fff) & 0xffff;
@@ -485,6 +498,8 @@ public class PPU {
                 break;
 
             case 0x2006:  //ppu address
+                if(testMode)
+                    ppu_registers[addr_value - 0x2000] = data;
 //                write_to_address_reg(data);
                 int dad = data & 0xff;
                 if(write_toggle==0){
@@ -704,6 +719,14 @@ public class PPU {
 
     public int add(byte a , int b){
         return b + Byte.toUnsignedInt(a);
+    }
+
+    public void turnOnTestMode(){
+        testMode = true;
+    }
+
+    public void turnOffTestMode(){
+        testMode = false;
     }
 
 }

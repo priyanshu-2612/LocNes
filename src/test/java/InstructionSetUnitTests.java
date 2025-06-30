@@ -26,6 +26,7 @@ public class InstructionSetUnitTests {
     @Test
     public void test() throws IOException {
 
+        ppu.turnOnTestMode();
         cpu.setPpu(ppu);
 
         int counter=0;
@@ -81,7 +82,7 @@ public class InstructionSetUnitTests {
         cpu.setSP((byte) cpuState.s);
         cpu.setStatus((byte) cpuState.p);
         for(int i=0; i<cpuState.ram.size() ; i++){
-//            cpu.writeTo(cpuState.ram.get(i).get(0), (byte)((int)cpuState.ram.get(i).get(1) & 0xff) );
+            cpu.writeTo(cpuState.ram.get(i).get(0), (byte)((int)cpuState.ram.get(i).get(1) & 0xff) );
             System.out.println("WROTE " + ((int)cpuState.ram.get(i).get(1) & 0xff) + " at " + cpuState.ram.get(i).get(0));
             System.out.println("VALUE READ IS " + cpu.getData(cpuState.ram.get(i).get(0)));
         }
