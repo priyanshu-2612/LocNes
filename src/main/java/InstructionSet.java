@@ -869,7 +869,10 @@ public class InstructionSet {
 
             case PreIndirectX:
                 int addr = add(cpu.X,op) & 0xff;
-                loc = (cpu.cpu_memory[(addr+1)&0xff] <<8) + cpu.cpu_memory[addr];
+//                loc = (cpu.cpu_memory[(addr+1)&0xff] <<8) + cpu.cpu_memory[addr];
+                int low = cpu.getData(addr & 0xFF) & 0xFF;
+                int high = cpu.getData((addr + 1) & 0xFF) & 0xFF;
+                loc = (high << 8) | low;
                 val = Byte.toUnsignedInt(cpu.cpu_memory[loc]);
                 res = cpu.Accumulator ^ val;
                 cpu.Accumulator = (byte) (res);
@@ -1099,22 +1102,14 @@ public class InstructionSet {
             case PreIndirectX:
                 addr = add(cpu.X, op);
                 addr = addr & 0xff;
-                //System.out.println("Address is " + Integer.toHexString(addr));
                 dump_at(0xff-5);
-                //System.out.println("At 0x100 : " + Integer.toHexString(cpu.cpu_memory[0x100]));
-//                int loc_high = ((cpu.cpu_memory[(addr+1)&0xff] << 8)&0xff00);
-//                int loc_low = cpu.cpu_memory[addr]&0x00ff; //changing
-                int loc_high = ((cpu.getData((addr+1)&0xff) << 8)&0xff00);
-                int loc_low = cpu.getData(addr)&0x00ff;
+//                int loc_high = ((cpu.getData((addr+1)&0xff) << 8)&0xff00);
+//                int loc_low = cpu.getData(addr)&0x00ff;
+//                loc = ( loc_high + loc_low );
+                int loc_high = cpu.getData((addr + 1) & 0xFF) & 0xFF;
+                int loc_low  = cpu.getData(addr & 0xFF) & 0xFF;
+                loc  = (loc_high << 8) | loc_low;
 
-                loc = ( loc_high + loc_low );
-//                if(0x2000 <= loc && loc <= 0x2007){
-//                    cpu.Accumulator = ppu.cpuRead((short) (loc & 0xffff));
-//                    setFlags(Byte.toUnsignedInt(cpu.Accumulator),  flags);
-//                    cpu.PC += 2;
-//                    return 6;
-//                }
-//                val = cpu.cpu_memory[loc];
                 val = cpu.getData(loc);
                 //System.out.println("Loc_High " + Integer.toHexString(loc_high) + " Loc_low "+ Integer.toHexString(loc_low));
                 //System.out.println("Value at "+ Integer.toHexString(loc) +" is " + Integer.toHexString(val));
@@ -1126,23 +1121,19 @@ public class InstructionSet {
             case PostIndirectY:
                 addr = Byte.toUnsignedInt(op);
                 dump_at(addr-5);
-                loc_high = (cpu.cpu_memory[(addr+1)&0xff] << 8)&0xff00;
-                loc_low = cpu.cpu_memory[addr&0xff]&0x00ff;
-                loc = (loc_high+ loc_low);
+//                loc_high = (cpu.cpu_memory[(addr+1)&0xff] << 8)&0xff00;
+//                loc_low = cpu.cpu_memory[addr&0xff]&0x00ff;
+//                loc = (loc_high+ loc_low);
+
+                int highByte = cpu.getData((addr + 1) & 0xFF) & 0xFF;
+                int lowByte  = cpu.getData(addr & 0xFF) & 0xFF;
+
+                loc = (highByte << 8) | lowByte;
+
                 //System.out.println("Loc_High is " + Integer.toHexString(loc_high) +" Loc_Low is " + Integer.toHexString(loc_low));
                 loc = loc & 0xffff;
-//                val = cpu.cpu_memory[add(loc , cpu.Y)&0xffff]&0xff; // here
                 val = cpu.getData(add(loc , cpu.Y));
                 dump_at(loc+cpu.Y-5);
-                //System.out.println("Loading data from " + Integer.toHexString(add(loc , cpu.Y)));
-                //System.out.println("Stored "  + Integer.toHexString(val) +" in Accumulator");
-//                loc = add(loc , cpu.Y);
-//                if(0x2000 <= loc && loc <= 0x2007){
-//                    cpu.Accumulator = ppu.cpuRead((short) (loc & 0xffff));
-//                    setFlags(Byte.toUnsignedInt(cpu.Accumulator),  flags);
-//                    cpu.PC += 2;
-//                    return 5;
-//                }
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
@@ -1846,7 +1837,12 @@ public class InstructionSet {
 
             case PreIndirectX:
                 int addr = add(cpu.X, op) & 0xff;
-                loc = cpu.cpu_memory[(addr+1)&0xff] << 8 + (cpu.cpu_memory[addr] & 0xff);
+//                loc = cpu.cpu_memory[(addr+1)&0xff] << 8 + (cpu.cpu_memory[addr] & 0xff);
+                int highByte = cpu.getData((addr + 1) & 0xFF) & 0xFF;
+                int lowByte  = cpu.getData(addr & 0xFF) & 0xFF;
+
+                loc = (highByte << 8) | lowByte;
+
                 val = Byte.toUnsignedInt(cpu.Accumulator);
                 val -= Byte.toUnsignedInt(cpu.cpu_memory[loc]);
                 //System.out.println("Value at memory is " + Integer.toHexString(cpu.cpu_memory[loc]));
@@ -1859,7 +1855,12 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-                loc = cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff] << 8 + (cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff] & 0xff);
+//                loc = cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff] << 8 + (cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff] & 0xff);
+                highByte = cpu.cpu_memory[(Byte.toUnsignedInt(op) + 1) & 0xFF] & 0xFF;
+                lowByte  = cpu.cpu_memory[Byte.toUnsignedInt(op) & 0xFF] & 0xFF;
+
+                loc = (highByte << 8) | lowByte;
+
                 val = cpu.Accumulator;
                 val -= Byte.toUnsignedInt(cpu.cpu_memory[add(loc , cpu.Y)]);
                 if(!getCarry())
