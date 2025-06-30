@@ -2204,17 +2204,17 @@ public class InstructionSet {
     }
 
     public int add(byte a , byte b){
-        return ((Byte.toUnsignedInt(a) + Byte.toUnsignedInt(b)));
+        return ((Byte.toUnsignedInt(a) + Byte.toUnsignedInt(b)))&0xff;
     }
     public int  add(int a , byte b){
         return ((a + Byte.toUnsignedInt(b)));
     }
 
     public int add(byte a , int b){
-        return ((b + Byte.toUnsignedInt(a)));
+        return ((b + Byte.toUnsignedInt(a)))&0xff;
     }
 
-    public int addShort(short a, int b){
+    public int addShort(short a, byte b){
         return ((a&0xffff) + (b&0xff)) & 0xffff;
     }
     public int sub(byte a , byte b){

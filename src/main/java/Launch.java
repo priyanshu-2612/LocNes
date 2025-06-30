@@ -143,6 +143,8 @@ public class Launch extends Application {
                     return;
                 }
                 long elapsed = System.nanoTime() - start;
+//                System.out.println("Elapsed: " + (elapsed / 1_000_000.0) + " ms"); for checking fps
+
                 long sleepTimeNs = (long)(FRAME_DURATION_NS - elapsed);
 
                 if (sleepTimeNs > 0) {
