@@ -18,8 +18,8 @@ public class Tester {
     Scene scene;
 
     Tester(){
-        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/nestest.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
+        cartridge = new Cartridge("C:/Users/prash/Downloads/nestest.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Balloon_fight.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/vram_access.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice_hockey.nes");
