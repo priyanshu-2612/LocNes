@@ -1,5 +1,7 @@
 package main.java;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 public class InstructionSet {
 
     CPU cpu;
@@ -14,20 +16,21 @@ public class InstructionSet {
         boolean[] flags = {true , true , true , true};
         switch (A) {
             case Immediate:
-                sum = add(op , (byte) (cpu.Status%2)); //op+C
+                sum = add(op , (byte) (cpu.Status & 0x01)); //op+C
                 sum = add(sum , cpu.Accumulator); // op+C+Alda
+//                sum = sum & 0xff;
                 setFlags(sum , flags);
-                checkAndSet(add(cpu.Accumulator,0),add(op,0) , sum);
+                checkAndSet((cpu.Accumulator & 0xff), (op & 0xff) , sum);
                 cpu.Accumulator = (byte)sum;
                 cpu.PC += 2;
                 return 2;
 
             case ZeropageAbs:
-                dump_at(0);
-                sum = add((cpu.getData(Byte.toUnsignedInt(op)) & 0xff), (byte) (Byte.toUnsignedInt(cpu.Status)%2));
+                sum = (cpu.getData(op&0xff)&0xff) +  (cpu.Status & 0x01);
                 sum = add(sum, cpu.Accumulator);
+//                sum = sum&0xff;
                 setFlags(sum , flags);
-                checkAndSet(add(cpu.Accumulator,0), cpu.cpu_memory[Byte.toUnsignedInt(op)]&0xff , sum);
+                checkAndSet((cpu.Accumulator & 0xff), cpu.getData(op & 0xff) , sum);
                 cpu.Accumulator = (byte) sum;
                 cpu.PC += 2;
                 return 3;
@@ -35,10 +38,11 @@ public class InstructionSet {
             case ZeropageIndexed:
                 int address = add(op , cpu.X)&0xff;
                 int val = cpu.getData(address);
-                sum = add(val , (byte) (cpu.Status%2));
+                sum = add(val , (byte) (cpu.Status & 0x01));
                 sum = add(sum, cpu.Accumulator);
+//                sum = sum & 0xff;
                 setFlags(sum, flags);
-                checkAndSet(add(cpu.Accumulator,0), val&0xff , sum);
+                checkAndSet((cpu.Accumulator & 0xff), val&0xff , sum);
                 cpu.Accumulator = (byte) sum;
                 cpu.PC += 2;
                 return 4;
@@ -46,29 +50,25 @@ public class InstructionSet {
             case PreIndirectX:
                 loc = add(op , cpu.X);
                 loc = loc&0xff;
-//                addr = ( (cpu.cpu_memory[(loc+1)&0xff]<<8)&0xff00) + (cpu.cpu_memory[loc]&0x00ff); // converting into little endian
                 int lowByte = cpu.getData(loc & 0xFF) & 0xFF;
                 int highByte = cpu.getData((loc + 1) & 0xFF) & 0xFF;
                 addr = (highByte << 8) | lowByte;
 
-
-                sum = add(cpu.cpu_memory[addr&0xffff] , (byte) (cpu.Status%2));
-//                sum = add(cpu.getData(addr&0xfff) , (byte) (cpu.Status%2));
+                sum = add(cpu.getData(addr) , (byte) (cpu.Status & 0x01));
                 sum = add(sum, cpu.Accumulator);
                 setFlags(sum , flags);
-                checkAndSet(add(cpu.Accumulator,0),add(cpu.cpu_memory[addr], 0) , sum);
+                checkAndSet((cpu.Accumulator & 0xff),(cpu.cpu_memory[addr] & 0xff) , sum);
                 cpu.Accumulator = (byte) sum;
                 cpu.PC += 2;
                 return 6;
 
             case PostIndirectY:
-                loc = add(op , cpu.Y);
-                loc = loc&0xff;
-//                addr = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
-                lowByte = cpu.getData(loc & 0xFF) & 0xFF;
-                highByte = cpu.getData((loc + 1) & 0xFF) & 0xFF;
+                lowByte = cpu.getData(op & 0xFF) & 0xFF;
+                highByte = cpu.getData((op + 1) & 0xFF) & 0xFF;
                 addr = (highByte << 8) | lowByte;
 
+                addr = add(addr, cpu.Y);
+                addr = addr & 0xffff;
                 sum = add(cpu.cpu_memory[addr], cpu.Status&0x01);
                 sum = add(sum, cpu.Accumulator);
                 setFlags(sum , flags);
@@ -91,8 +91,9 @@ public class InstructionSet {
         boolean[] flags = {true , true , true , true};
         switch(A){
             case Absolute:
-                sum = add(cpu.getData(op), (byte) (cpu.Status%2));
+                sum = add(cpu.getData(op), (byte) (cpu.Status & 0x01));
                 sum = add(sum, cpu.Accumulator);
+//                sum = sum & 0xff;
                 setFlags(sum ,flags);
                 checkAndSet(add(cpu.Accumulator,0),add(cpu.cpu_memory[Short.toUnsignedInt(op)], 0) , sum);
                 cpu.Accumulator = (byte) sum;
@@ -100,27 +101,20 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-//                loc = add(op, cpu.X);
-//                sum = add(cpu.cpu_memory[loc] , cpu.Status%2);
-//                sum = add(sum, cpu.Accumulator);
-
-                loc = (op & 0xffff) + (cpu.X & 0xff);
+                loc = addShort(op, cpu.X);
                 sum = cpu.getData(loc) + (cpu.Status & 0x01) + (cpu.Accumulator & 0xff);
 
                 setFlags(sum, flags);
-                checkAndSet(add(cpu.Accumulator,0),add(cpu.cpu_memory[loc], 0) , sum);
+                checkAndSet((cpu.Accumulator & 0xff),cpu.getData(loc) , sum);
                 cpu.Accumulator = (byte) sum;
                 cpu.PC += 3;
                 return 4;
 
             case AbsoluteY:
-//                loc = add(op, cpu.Y);
-//                sum = add(cpu.cpu_memory[loc] , cpu.Status%2);
-//                sum = add(sum, cpu.Accumulator);
 
-                loc = (op & 0xffff) + (cpu.Y & 0xff);
+                loc = addShort(op, cpu.Y);
                 sum = cpu.getData(loc) + (cpu.Status & 0x01) + (cpu.Accumulator & 0xff);
-
+//                sum = sum&0xff;
                 setFlags(sum , flags);
                 checkAndSet(add(cpu.Accumulator,0),add(cpu.cpu_memory[loc], 0) , sum);
                 cpu.Accumulator = (byte) sum;
@@ -141,8 +135,8 @@ public class InstructionSet {
                 operand = Integer.parseInt(Integer.toString(Byte.toUnsignedInt(op)),16);
                 val = cpu.Accumulator & op;
                 int ac = Byte.toUnsignedInt(cpu.Accumulator) , opint = Byte.toUnsignedInt(op);
-                //System.out.println("0x" + Integer.toHexString(ac) + " & 0x" + Integer.toHexString(opint));
-                //System.out.println("Result of AND is "+ Integer.toBinaryString(val));
+//                //System.out.println("0x" + Integer.toHexString(ac) + " & 0x" + Integer.toHexString(opint));
+//                //System.out.println("Result of AND is "+ Integer.toBinaryString(val));
                 setFlags(val , flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
@@ -178,11 +172,11 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-                loc = add(op , cpu.Y);
-                loc = loc&0xff;
-                lowByte = cpu.getData(loc & 0xFF) & 0xFF;
-                highByte = cpu.getData((loc + 1) & 0xFF) & 0xFF;
+                lowByte = cpu.getData(op & 0xFF) & 0xFF;
+                highByte = cpu.getData((op + 1) & 0xFF) & 0xFF;
                 addr = (highByte << 8) | lowByte;
+
+                addr = (addr + (cpu.Y & 0xff)) & 0xffff;
 
                 val = cpu.cpu_memory[addr] & cpu.Accumulator;
                 setFlags(val , flags);
@@ -246,9 +240,9 @@ public class InstructionSet {
         switch(A){
             case ZeropageAbs:
                 val = cpu.cpu_memory[Byte.toUnsignedInt(op)]&0xff;
-                //System.out.println("Shifting 0x" + Integer.toHexString(val) + " one left");
+//                //System.out.println("Shifting 0x" + Integer.toHexString(val) + " one left");
                 carry = ((val&0x80) == 0x80) ? 1: 0;
-                //System.out.println("Carry condition is "+ (val&0x80) + " and " + ((val&0x80)==0x80));
+//                //System.out.println("Carry condition is "+ (val&0x80) + " and " + ((val&0x80)==0x80));
                 val = (val << 1)&0xff;
                 setFlags(val, flags);
                 cpu.Status |= (byte) carry;
@@ -282,9 +276,9 @@ public class InstructionSet {
 //                addr = (cpu.cpu_memory[Short.toUnsignedInt(op)+1] << 8) + cpu.cpu_memory[Short.toUnsignedInt(op)];
                 addr = Short.toUnsignedInt(op);
                 val = cpu.cpu_memory[addr]&0xff;
-                //System.out.println("Shifting 0x" + Integer.toHexString(val) + " one left");
+//                //System.out.println("Shifting 0x" + Integer.toHexString(val) + " one left");
                 carry = ((val & 0x80) == 0x80) ? 1 : 0;
-                //System.out.println("Carry condition is "+ (val&0x80) + " and " + ((val&0x80)==0x80));
+//                //System.out.println("Carry condition is "+ (val&0x80) + " and " + ((val&0x80)==0x80));
                 val = (val << 1) & 0xff;
                 setFlags(val, flags);
                 cpu.Status |= (byte) carry;
@@ -325,11 +319,11 @@ public class InstructionSet {
     public int beq(addressingMode A ,byte op){
         cpu.PC += 2;
         if(getZero()) {
-            //System.out.println("Displacing by " + Integer.toHexString(Byte.toUnsignedInt(op)));
-            //System.out.println("Branching to 0x" + Integer.toHexString((cpu.PC+op)&0xffff));
+//            //System.out.println("Displacing by " + Integer.toHexString(Byte.toUnsignedInt(op)));
+//            //System.out.println("Branching to 0x" + Integer.toHexString((cpu.PC+op)&0xffff));
 //          cpu.PC = (short) add(cpu.PC, op);
             cpu.PC += op;  //signed addition
-            //System.out.println("PC is now " + Byte.toUnsignedInt(op));
+//            //System.out.println("PC is now " + Byte.toUnsignedInt(op));
         }
         return 2;
     }
@@ -339,7 +333,7 @@ public class InstructionSet {
         int acc = Byte.toUnsignedInt((byte) (cpu.Accumulator & 0xff)), mem, val;
         mem = Byte.toUnsignedInt((byte) (cpu.cpu_memory[Byte.toUnsignedInt(op)] & 0xff));
         val = mem & acc;
-        //System.out.println("Memory value is " + Integer.toHexString(mem));
+//        //System.out.println("Memory value is " + Integer.toHexString(mem));
         if ((val & 0xff) == 0){
                 setZero();
         }
@@ -365,7 +359,7 @@ public class InstructionSet {
         int acc = Byte.toUnsignedInt((byte) (cpu.Accumulator & 0xff)), mem , val;
         mem = Byte.toUnsignedInt((byte) (cpu.cpu_memory[Short.toUnsignedInt(op)] & 0xff));
         val = mem & acc;
-        //System.out.println("Memory value is " + Integer.toHexString(mem));
+//        //System.out.println("Memory value is " + Integer.toHexString(mem));
         if ((val & 0xff) == 0){
             setZero();
         }
@@ -402,9 +396,9 @@ public class InstructionSet {
         int PC_HIGH = ((cpu.cpu_memory[0xfffa+1]<<8) & 0xff00);
         int PC_LOW = ((cpu.cpu_memory[0xfffa]) & 0x00ff);
         cpu.PC = (short) (PC_HIGH + PC_LOW);
-        //System.out.println("PC_HIGH is " + PC_HIGH);
-        //System.out.println("PC_LOW is " + PC_LOW);
-        //System.out.println("PC is now 0x" + Integer.toHexString(Short.toUnsignedInt(cpu.PC)));
+//        //System.out.println("PC_HIGH is " + PC_HIGH);
+//        //System.out.println("PC_LOW is " + PC_LOW);
+//        //System.out.println("PC is now 0x" + Integer.toHexString(Short.toUnsignedInt(cpu.PC)));
         return 8;
     }
 
@@ -438,13 +432,13 @@ public class InstructionSet {
         setBreak();
 
         cpu.push(cpu.Status);
-        System.out.println("Status pushed was " + (cpu.Status&0xff));
+//        System.out.println("Status pushed was " + (cpu.Status&0xff));
 
         int lo = cpu.cpu_memory[0xFFFE] & 0xFF;
         int hi = cpu.cpu_memory[0xFFFF] & 0xFF;
         int loc = (hi << 8) | lo;
 
-        System.out.println("pc is " + loc);
+//        System.out.println("pc is " + loc);
         cpu.PC = (short) loc;
         return 7;
     }
@@ -491,7 +485,7 @@ public class InstructionSet {
         r = r&0xff;
         op = op&0xff;
         int res = r-op;
-        //System.out.println("Result is " + Integer.toHexString(res)+ " " + res);
+//        //System.out.println("Result is " + Integer.toHexString(res)+ " " + res);
         if(r < op){
             clearZero();
         }
@@ -734,12 +728,12 @@ public class InstructionSet {
             case ZeropageAbs:
 //                loc = Byte.toUnsignedInt(cpu.cpu_memory[Byte.toUnsignedInt(op)]);
                 loc = Byte.toUnsignedInt(op);
-                //System.out.println("The val at " + loc + " is " + Byte.toUnsignedInt(cpu.cpu_memory[loc]));
+//                //System.out.println("The val at " + loc + " is " + Byte.toUnsignedInt(cpu.cpu_memory[loc]));
 //                cpu.cpu_memory[loc] = (byte) sub(cpu.cpu_memory[loc],1);
 
                 cpu.writeTo(loc, (byte) sub(cpu.cpu_memory[loc],1) );
 
-                //System.out.println("And now it is " + Byte.toUnsignedInt(cpu.cpu_memory[loc]));
+//                //System.out.println("And now it is " + Byte.toUnsignedInt(cpu.cpu_memory[loc]));
                 setFlags(add(cpu.cpu_memory[loc],0) , flags);
                 cpu.PC += 2;
                 dump_at(0);
@@ -765,9 +759,7 @@ public class InstructionSet {
         boolean[] flags = {false , false, true , true};
         switch(A){
             case Absolute:
-//                loc = Byte.toUnsignedInt(cpu.cpu_memory[Short.toUnsignedInt(op)]);
                 loc = Short.toUnsignedInt(op);
-//                cpu.cpu_memory[loc] = (byte) sub(cpu.cpu_memory[loc],1);
                 cpu.writeTo(loc, (byte) sub(cpu.cpu_memory[loc],1));
                 setFlags(add(cpu.cpu_memory[loc],0) , flags);
                 cpu.PC += 3;
@@ -775,9 +767,7 @@ public class InstructionSet {
                 return 6;
 
             case AbsoluteX:
-//                loc = Byte.toUnsignedInt(cpu.cpu_memory[Short.toUnsignedInt(op) + Byte.toUnsignedInt(cpu.X)]);
-                loc = Short.toUnsignedInt(op) + Byte.toUnsignedInt(cpu.X);
-//                cpu.cpu_memory[loc] = (byte) sub(cpu.cpu_memory[loc],1);
+                loc = addShort(op, cpu.X);
                 cpu.writeTo(loc,(byte) sub(cpu.cpu_memory[loc],1));
                 setFlags(add(cpu.cpu_memory[loc],0) , flags);
                 cpu.PC += 3;
@@ -791,10 +781,10 @@ public class InstructionSet {
 
     public int dex(addressingMode A){
         boolean[] flags = {false , false, true , true};
-        //System.out.println("X is " + Byte.toUnsignedInt(cpu.X));
+//        //System.out.println("X is " + Byte.toUnsignedInt(cpu.X));
 //        cpu.X = (byte) sub(cpu.X, 1);
         cpu.X = (byte) ((cpu.X&0xff)-1);
-        //System.out.println("X is now " + Byte.toUnsignedInt(cpu.X));
+//        //System.out.println("X is now " + Byte.toUnsignedInt(cpu.X));
 
         setFlags(Byte.toUnsignedInt(cpu.X) , flags);
 //        setFlags((cpu.X&0xff) , flags);
@@ -804,9 +794,9 @@ public class InstructionSet {
 
     public int dey(addressingMode A){
         boolean[] flags = {false , false, true , true};
-        //System.out.println("Y is " + Byte.toUnsignedInt(cpu.Y));
+//        //System.out.println("Y is " + Byte.toUnsignedInt(cpu.Y));
         cpu.Y = (byte) sub(cpu.Y, 1);
-        //System.out.println("Y is now " + Byte.toUnsignedInt(cpu.Y));
+//        //System.out.println("Y is now " + Byte.toUnsignedInt(cpu.Y));
 
         setFlags(Byte.toUnsignedInt(cpu.Y), flags);
         cpu.PC += 1;
@@ -885,7 +875,7 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-                val = cpu.cpu_memory[add(Short.toUnsignedInt(op) , cpu.X)];
+                val = cpu.getData(addShort(op, cpu.X));
                 res = cpu.Accumulator ^ val;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
@@ -893,7 +883,7 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteY:
-                val = cpu.cpu_memory[add(Short.toUnsignedInt(op) , cpu.Y)];
+                val = cpu.getData(addShort(op , cpu.Y));
                 res = cpu.Accumulator ^ val;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
@@ -913,7 +903,7 @@ public class InstructionSet {
                 val = cpu.cpu_memory[Byte.toUnsignedInt(op)]&0xff;
                 res = (val + 1)&0xff;
                 setFlags(res, flags);
-                //System.out.println("Setting 0x" + Integer.toHexString(Byte.toUnsignedInt(op)) + " to " + Integer.toHexString(val));
+//                //System.out.println("Setting 0x" + Integer.toHexString(Byte.toUnsignedInt(op)) + " to " + Integer.toHexString(val));
 //                cpu.cpu_memory[Byte.toUnsignedInt(op)] = (byte)res;
                 cpu.writeTo(Byte.toUnsignedInt(op) , (byte) res);
                 cpu.PC += 2;
@@ -948,7 +938,7 @@ public class InstructionSet {
                 return 6;
 
             case AbsoluteX:
-                val = cpu.cpu_memory[add(Short.toUnsignedInt(op) , cpu.X)];
+                val = cpu.getData(addShort(op , cpu.X));
                 res = (val+1)&0xff;
                 setFlags(res, flags);
 //                cpu.cpu_memory[add(Short.toUnsignedInt(op) , cpu.X)] = (byte)res;
@@ -967,7 +957,7 @@ public class InstructionSet {
 
         res = add(cpu.X, 1)&0xff;
 //        if(res>255) res=0;
-        //System.out.println("X is now " + res);
+//        //System.out.println("X is now " + res);
         setFlags(res , flags);
         cpu.X = (byte) res;
         cpu.PC += 1;
@@ -1005,7 +995,7 @@ public class InstructionSet {
                 val_low = cpu.cpu_memory[Short.toUnsignedInt(op)]&0xff;
                 val = val_high + val_low;
                 dump_at(((op_value+1)&op_value)-5);
-                //System.out.println("Op+1 is " + ((op_value+1)&op_value));
+//                //System.out.println("Op+1 is " + ((op_value+1)&op_value));
                 cpu.PC = (short) val;
                 return 5;
 
@@ -1015,8 +1005,8 @@ public class InstructionSet {
     }
 
     public int jsr(addressingMode A , short op){
-        //System.out.println("Setting PC to " + Integer.toHexString(Short.toUnsignedInt(op)));
-        //System.out.println("Stack Pointer is "+ Integer.toHexString(cpu.SP));
+//        //System.out.println("Setting PC to " + Integer.toHexString(Short.toUnsignedInt(op)));
+//        //System.out.println("Stack Pointer is "+ Integer.toHexString(cpu.SP));
         cpu.PC += 2;
 
         cpu.push((byte) ((cpu.PC>>8)&0xff));
@@ -1024,19 +1014,19 @@ public class InstructionSet {
         cpu.push((byte) (((cpu.PC)& 0xff)&0xff));
         cpu.PC += 3;
 
-        //System.out.println("HIGH BYTE IS "+ Integer.toHexString(cpu.PC>>8));
-        //System.out.println("LOW BYTE IS "+ Integer.toHexString(cpu.PC & 0xff));
+//        //System.out.println("HIGH BYTE IS "+ Integer.toHexString(cpu.PC>>8));
+//        //System.out.println("LOW BYTE IS "+ Integer.toHexString(cpu.PC & 0xff));
         cpu.PC = op;
-        //System.out.println("PC is now " + Integer.toHexString(Short.toUnsignedInt(cpu.PC)));
+//        //System.out.println("PC is now " + Integer.toHexString(Short.toUnsignedInt(cpu.PC)));
         return 6;
     }
 
     private void ram_dump() {
-        //System.out.println("RAM DUMP:");
+//        //System.out.println("RAM DUMP:");
         for(int y=-5 ; y<10 ;y++) {
             String pc = Integer.toHexString(Short.toUnsignedInt(cpu.PC)+y);
             String inst = Integer.toHexString(Byte.toUnsignedInt(cpu.cpu_memory[y+Short.toUnsignedInt(cpu.PC)]));
-            //System.out.println("0x" + pc + " : 0x" +inst);
+//            //System.out.println("0x" + pc + " : 0x" +inst);
         }
     }
 
@@ -1057,7 +1047,7 @@ public class InstructionSet {
 //                val = Byte.toUnsignedInt(cpu.cpu_memory[Byte.toUnsignedInt(op)]);
                 val = cpu.getData(Byte.toUnsignedInt(op));
                 dump_at(Byte.toUnsignedInt(op));
-                //System.out.println("Loading value " + val+ " in accumulator");
+//                //System.out.println("Loading value " + val+ " in accumulator");
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
@@ -1091,8 +1081,8 @@ public class InstructionSet {
                 loc  = (loc_high << 8) | loc_low;
 
                 val = cpu.getData(loc);
-                //System.out.println("Loc_High " + Integer.toHexString(loc_high) + " Loc_low "+ Integer.toHexString(loc_low));
-                //System.out.println("Value at "+ Integer.toHexString(loc) +" is " + Integer.toHexString(val));
+//                //System.out.println("Loc_High " + Integer.toHexString(loc_high) + " Loc_low "+ Integer.toHexString(loc_low));
+//                //System.out.println("Value at "+ Integer.toHexString(loc) +" is " + Integer.toHexString(val));
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
@@ -1110,7 +1100,7 @@ public class InstructionSet {
 
                 loc = (highByte << 8) | lowByte;
 
-                //System.out.println("Loc_High is " + Integer.toHexString(loc_high) +" Loc_Low is " + Integer.toHexString(loc_low));
+//                //System.out.println("Loc_High is " + Integer.toHexString(loc_high) +" Loc_Low is " + Integer.toHexString(loc_low));
                 loc = loc & 0xffff;
                 val = cpu.getData(add(loc , cpu.Y));
                 dump_at(loc+cpu.Y-5);
@@ -1138,7 +1128,7 @@ public class InstructionSet {
                 dump_at(0x0180-5);
 //                val = cpu.cpu_memory[Short.toUnsignedInt(op)]; // here
                 val = cpu.getData(Short.toUnsignedInt(op));
-                //System.out.println("Loading value " + Integer.toHexString(val)+ " in accumulator");
+//                //System.out.println("Loading value " + Integer.toHexString(val)+ " in accumulator");
                 setFlags(val, flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 3;
@@ -1191,7 +1181,7 @@ public class InstructionSet {
                 //val = Integer.parseInt(Integer.toString(Byte.toUnsignedInt(op)),16);
                 setFlags(val, flags);
                 cpu.X = (byte) val;
-                //System.out.println("Loading value " + val + " in X : " + Byte.toUnsignedInt(cpu.X));
+//                //System.out.println("Loading value " + val + " in X : " + Byte.toUnsignedInt(cpu.X));
 //                ram_dump();
                 cpu.PC += 2;
                 return 2;
@@ -1250,7 +1240,7 @@ public class InstructionSet {
                 //val = Integer.parseInt(Integer.toString(Byte.toUnsignedInt(op)),16);
                 setFlags(val, flags);
                 cpu.Y = (byte) val;
-                //System.out.println("Loading value " + val + " in Y : " + Byte.toUnsignedInt(cpu.Y));
+//                //System.out.println("Loading value " + val + " in Y : " + Byte.toUnsignedInt(cpu.Y));
                 cpu.PC += 2;
                 return 2;
 
@@ -1348,18 +1338,17 @@ public class InstructionSet {
         boolean[] flags = {true , false , true , true};
         switch(A){
             case Absolute:
-                val = Byte.toUnsignedInt(cpu.cpu_memory[Short.toUnsignedInt(op)]);
-                carry = val%2;
+//                val = Byte.toUnsignedInt(cpu.cpu_memory[Short.toUnsignedInt(op)]);
+                val = cpu.getData(op);
+                carry = val & 0x01;
                 val >>= 1;
                 setFlags(val , flags);
                 cpu.Status |= (byte) carry;
-//                cpu.cpu_memory[Short.toUnsignedInt(op)] = (byte)val;
                 cpu.writeTo(Short.toUnsignedInt(op) , (byte) val);
                 cpu.PC += 3;
                 return 6;
 
             case AbsoluteX:
-//                val = Byte.toUnsignedInt(cpu.cpu_memory[addShort(op ,cpu.X)]);
                 val = cpu.getData(addShort(op ,cpu.X));
                 carry = val%2;
                 val >>= 1;
@@ -1422,13 +1411,14 @@ public class InstructionSet {
 
             case PostIndirectY:
 //                addr = (cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff]<<8) + cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff];
-                loc = add(op , cpu.Y);
-                loc = loc&0xff;
-                low  = cpu.cpu_memory[loc & 0xFF] & 0xFF;
-                high = cpu.cpu_memory[(loc + 1) & 0xFF] & 0xFF;
+                low = cpu.getData(op & 0xFF) & 0xFF;
+                high = cpu.getData((op + 1) & 0xFF) & 0xFF;
                 addr = (high << 8) + low;
 
-                val = Byte.toUnsignedInt(cpu.cpu_memory[addr]) | cpu.Accumulator;
+                addr = (addr+(cpu.Y & 0xff))&0xffff;
+
+                val = cpu.getData(addr) | (cpu.Accumulator & 0xff);
+                val = val&0xff;
                 setFlags(val , flags);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
@@ -1478,20 +1468,18 @@ public class InstructionSet {
     }
 
     public int php(addressingMode A){
-//        cpu.stack[Byte.toUnsignedInt(cpu.SP)] = cpu.Status;
-//        cpu.SP = (byte) (sub(cpu.SP,1) & 0xff);
-        cpu.push(cpu.Status);
+        cpu.push((byte) (cpu.Status | 0x30));
         cpu.PC += 1;
         return 3;
     }
 
     public int pla(addressingMode A){
-        //System.out.println("SP is " + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)));
+//        //System.out.println("SP is " + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)));
 //        cpu.SP++;
 //        cpu.Accumulator = (byte) (cpu.stack[Byte.toUnsignedInt(cpu.SP)] & 0xff);
         dump_at(0x100+ Byte.toUnsignedInt(cpu.SP)-5);
         cpu.Accumulator = cpu.pop();
-        //System.out.println("Value at SP was 0x" + Integer.toHexString(Byte.toUnsignedInt(cpu.stack[Byte.toUnsignedInt(cpu.SP)])));
+//        //System.out.println("Value at SP was 0x" + Integer.toHexString(Byte.toUnsignedInt(cpu.stack[Byte.toUnsignedInt(cpu.SP)])));
         boolean[] flags= {false , false , true , true};
         setFlags(Byte.toUnsignedInt(cpu.Accumulator) & 0xff ,flags);
         cpu.PC += 1;
@@ -1715,63 +1703,58 @@ public class InstructionSet {
 
     public int rti(addressingMode A){
 
-        //System.out.println("SP is " + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)));
-//        cpu.SP++;
-//        cpu.Status = cpu.stack[Byte.toUnsignedInt(cpu.SP)];
         dump_at(0x0100 + Byte.toUnsignedInt(cpu.SP) - 5);
         cpu.Status = cpu.pop();
 
-//        cpu.SP++;
-//        cpu.PC = (short) ( (cpu.stack[Byte.toUnsignedInt(cpu.SP)]<<8) + cpu.stack[add(cpu.SP,1)]);
-//        cpu.SP++;
-
-        cpu.PC = (short) (Byte.toUnsignedInt(cpu.pop()) + (Byte.toUnsignedInt(cpu.pop())<<8));
-//        cpu.PC += 1;
+//        cpu.PC = (short) (Byte.toUnsignedInt(cpu.pop()) + (Byte.toUnsignedInt(cpu.pop())<<8));
+        int low = cpu.pop()&0xff;
+        int high = ((cpu.pop()&0xff) << 8);
+        cpu.PC = (short) ((high & 0xff00) | low);
         return 6;
     }
 
     public int rts(addressingMode A){
 //        cpu.PC += 2;
 //        cpu.SP += 1;
-//        //System.out.println("Stack Pointer is :" + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)+1));
+////        //System.out.println("Stack Pointer is :" + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)+1));
 //        cpu.PC = (short) (cpu.stack[Byte.toUnsignedInt(cpu.SP)] + Byte.toUnsignedInt(cpu.stack[add(cpu.SP,1)])<<8 );
 
        int low  = ((cpu.pop()&0xff));
        int high =  (((cpu.pop())<<8)&0xff00);
 
-//        //System.out.println("Value at " + Integer.toHexString(cpu.SP) + " " + Integer.toHexString(cpu.stack[Byte.toUnsignedInt(cpu.SP)]));
-//        //System.out.println("Returning back to " + Integer.toHexString(cpu.stack[add(cpu.SP,1)]<<8));
+////        //System.out.println("Value at " + Integer.toHexString(cpu.SP) + " " + Integer.toHexString(cpu.stack[Byte.toUnsignedInt(cpu.SP)]));
+////        //System.out.println("Returning back to " + Integer.toHexString(cpu.stack[add(cpu.SP,1)]<<8));
 
-        //System.out.println("Value at " + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)-1) + " " + Integer.toHexString(cpu.stack[Byte.toUnsignedInt((byte) (cpu.SP-1))]));
-        //System.out.println("Returning back to " + Integer.toHexString(cpu.stack[Byte.toUnsignedInt(cpu.SP)]<<8));
+//        //System.out.println("Value at " + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)-1) + " " + Integer.toHexString(cpu.stack[Byte.toUnsignedInt((byte) (cpu.SP-1))]));
+//        //System.out.println("Returning back to " + Integer.toHexString(cpu.stack[Byte.toUnsignedInt(cpu.SP)]<<8));
 
 //        cpu.SP += 1;
 //        int high = cpu.stack[Byte.toUnsignedInt(cpu.SP)]<<8;
 //        int low = cpu.stack[sub(cpu.SP,1)]&0xff;
 
 
-        //System.out.println("Low 0x" + Integer.toHexString(low) + " High 0x"+ Integer.toHexString(high));
-        //System.out.println("Returning to " + Integer.toHexString(low+high+1));
+//        //System.out.println("Low 0x" + Integer.toHexString(low) + " High 0x"+ Integer.toHexString(high));
+//        //System.out.println("Returning to " + Integer.toHexString(low+high+1));
         cpu.PC = (short) (low+high);
         cpu.PC += 1;
 
-        //System.out.println("Returning to " + Integer.toHexString(cpu.PC&0xffff));
+//        //System.out.println("Returning to " + Integer.toHexString(cpu.PC&0xffff));
 //        cpu.PC += 2;
-        //System.out.println("Stack Pointer is :" + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)));
+//        //System.out.println("Stack Pointer is :" + Integer.toHexString(Byte.toUnsignedInt(cpu.SP)));
         return 6;
     }
 
     public void calculateBorrow(int a , int memory, int carry){
             int b = memory +carry;
-            //System.out.println("M + ~C is " + Integer.toHexString(memory));
+//            //System.out.println("M + ~C is " + Integer.toHexString(memory));
             int m = (a & 0x80) != 0 ? 1 : 0;
             int n = (b & 0x80) != 0 ? 1 : 0;
-            //System.out.println("M is "+ m +" N is "+ n);
+//            //System.out.println("M is "+ m +" N is "+ n);
             int c = a-b;
-            //System.out.println("C is " + c);
+//            //System.out.println("C is " + c);
             int s = (c & 0x80) != 0 ? 1 : 0;
-            //System.out.println("S is "+ s);
-            //System.out.println("Status is " + Integer.toHexString(cpu.Status));
+//            //System.out.println("S is "+ s);
+//            //System.out.println("Status is " + Integer.toHexString(cpu.Status));
 
             if(m==0 && n==0 && s==1)
                 cpu.Status &= (byte) 0xfe;
@@ -1783,7 +1766,7 @@ public class InstructionSet {
             else
                 clearOverflow();
 
-            //System.out.println("Status is " + Integer.toHexString(cpu.Status));
+//            //System.out.println("Status is " + Integer.toHexString(cpu.Status));
 
     }
 
@@ -1804,7 +1787,7 @@ public class InstructionSet {
                 setFlags(val , flags);
                 calculateBorrow(cpu.Accumulator, op,carry);
                 cpu.Accumulator = (byte) val;
-                //System.out.println("Val is "+ val);
+//                //System.out.println("Val is "+ val);
                 cpu.PC += 2;
                 return 2;
 
@@ -1841,7 +1824,7 @@ public class InstructionSet {
 
                 val = Byte.toUnsignedInt(cpu.Accumulator);
                 val -= Byte.toUnsignedInt(cpu.cpu_memory[loc]);
-                //System.out.println("Value at memory is " + Integer.toHexString(cpu.cpu_memory[loc]));
+//                //System.out.println("Value at memory is " + Integer.toHexString(cpu.cpu_memory[loc]));
                 if(!getCarry())
                     val--;
                 setFlags(val , flags);
@@ -1851,18 +1834,17 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-//                loc = cpu.cpu_memory[(Byte.toUnsignedInt(op)+1)&0xff] << 8 + (cpu.cpu_memory[Byte.toUnsignedInt(op)&0xff] & 0xff);
                 highByte = cpu.cpu_memory[(Byte.toUnsignedInt(op) + 1) & 0xFF] & 0xFF;
                 lowByte  = cpu.cpu_memory[Byte.toUnsignedInt(op) & 0xFF] & 0xFF;
 
                 loc = (highByte << 8) | lowByte;
 
                 val = cpu.Accumulator;
-                val -= Byte.toUnsignedInt(cpu.cpu_memory[add(loc , cpu.Y)]);
+                val -= cpu.getData(add(loc , cpu.Y));
                 if(!getCarry())
                     val--;
                 setFlags(val , flags);
-                calculateBorrow(cpu.Accumulator, cpu.cpu_memory[add(loc , cpu.Y)],carry);
+                calculateBorrow(cpu.Accumulator, cpu.getData(add(loc , cpu.Y)),carry);
                 cpu.Accumulator = (byte) val;
                 cpu.PC += 2;
                 return 5;
@@ -1966,11 +1948,11 @@ public class InstructionSet {
 
             case PreIndirectX:
                 int addr = add(op , cpu.X) & 0xff;
-                //System.out.println("Address is " +Integer.toHexString(addr));
+//                //System.out.println("Address is " +Integer.toHexString(addr));
                 int loc_high = ((cpu.cpu_memory[(addr+1)&0xff]<<8)&0xff00);
                 int loc_low = (cpu.cpu_memory[addr] & 0xff);
                 loc = ( loc_high + loc_low);
-                //System.out.println("Loc is " + Integer.toHexString(loc));
+//                //System.out.println("Loc is " + Integer.toHexString(loc));
 //                val = Byte.toUnsignedInt((byte) (cpu.cpu_memory[loc] & 0xff));
 //                cpu.cpu_memory[val] = cpu.Accumulator;
 //                if(0x2000 <= loc && loc <= 0x2007){
@@ -1993,7 +1975,7 @@ public class InstructionSet {
 //                val = Byte.toUnsignedInt((byte) (cpu.cpu_memory[add(loc, cpu.X)] & 0xff));
 //                cpu.cpu_memory[val] = cpu.Accumulator;
                 loc = add(loc,cpu.Y);
-                //System.out.println("Setting 0x" + Integer.toHexString(loc) +" to " + Byte.toUnsignedInt(cpu.Accumulator));
+//                //System.out.println("Setting 0x" + Integer.toHexString(loc) +" to " + Byte.toUnsignedInt(cpu.Accumulator));
 //                if(0x2000 <= loc && loc <= 0x2007){
 //                    ppu.cpuWrite((short) loc, cpu.Accumulator);
 //                    cpu.PC += 2;
@@ -2021,21 +2003,16 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
+//                System.out.println("OP is " + Integer.toHexString(op&0xffff));
                 loc = addShort(op , cpu.X);
-//                cpu.cpu_memory[add(op , cpu.X)] = cpu.Accumulator;
-                cpu.writeTo(addShort(op , cpu.X) , cpu.Accumulator);
+//                System.out.println("Loc is " +Integer.toHexString(loc));
+                cpu.writeTo(loc , cpu.Accumulator);
                 cpu.PC += 3;
                 dump_at(0);
                 return 5;
 
             case AbsoluteY:
                 loc = addShort(op , cpu.Y);
-//                if(0x2000 <= loc && loc <= 0x2007){
-//                    ppu.cpuWrite(op, cpu.Accumulator);
-//                    cpu.PC += 3;
-//                    return 5;
-//                }
-//                cpu.cpu_memory[add(op , cpu.Y)] = cpu.Accumulator;
                 cpu.writeTo(addShort(op , cpu.Y),cpu.Accumulator);
                 cpu.PC += 3;
                 dump_at(0);
@@ -2082,7 +2059,7 @@ public class InstructionSet {
 //                cpu.cpu_memory[Byte.toUnsignedInt(op)] = cpu.Y;
                 cpu.writeTo(Byte.toUnsignedInt(op), cpu.Y);
                 String yval = Integer.toHexString(Byte.toUnsignedInt(cpu.Y)) , valLoc = Integer.toHexString(Byte.toUnsignedInt(op));
-                //System.out.println("Loading " + yval + " at Location " + val);
+//                //System.out.println("Loading " + yval + " at Location " + val);
                 cpu.PC += 2;
                 return 3;
 
@@ -2125,7 +2102,7 @@ public class InstructionSet {
     public int tsx(addressingMode A){
         boolean[] flags = {false , false, true , true};
         setFlags(cpu.SP, flags);
-        //System.out.println("Setting X : " + Integer.toHexString(cpu.SP));
+//        //System.out.println("Setting X : " + Integer.toHexString(cpu.SP));
         cpu.X = cpu.SP;
         cpu.PC += 1;
         return 2;
@@ -2242,10 +2219,10 @@ public class InstructionSet {
         a = a&0xff;
         b = b&0xff;
         c = c&0xff;
-        //System.out.println("OP1 : " + a +" OP2 : " +b + " Res : " +c);
+//        //System.out.println("OP1 : " + a +" OP2 : " +b + " Res : " +c);
         int s1 = (a>>7) & 0x01 , s2 = (b>>7) & 0x01;
         int sign = (c>>7) & 0x01;
-        //System.out.println("M7 : " +s1 +" N7 : " + s2 +  " R7 : " + sign);
+//        //System.out.println("M7 : " +s1 +" N7 : " + s2 +  " R7 : " + sign);
         if(s1==s2){
             if(s1!=sign) setOverflow();
             else clearOverflow();
@@ -2254,7 +2231,7 @@ public class InstructionSet {
     }
 
     private void setFlags(int sum, boolean[] flags) {
-        //System.out.println("In FlagSetter , Sum is " + sum);
+//        //System.out.println("In FlagSetter , Sum is " + sum);
         if(flags[0] && sum>255 && !getCarry()) setCarry();
         if(flags[1] && (sum>127 || sum<-127) && !getOverflow()) setOverflow();
         if(flags[3] && (sum==0 || sum==256) && !getZero()) setZero();
@@ -2271,7 +2248,7 @@ public class InstructionSet {
 
     public void dump_at(int a){
         for(int i=0 ; i<10 ; i++){
-            //System.out.println(Integer.toHexString((a+i)&0xffff) + " : 0x" + Integer.toHexString(Byte.toUnsignedInt((byte) (cpu.cpu_memory[(a+i)&0xffff] & 0xff))));
+//            //System.out.println(Integer.toHexString((a+i)&0xffff) + " : 0x" + Integer.toHexString(Byte.toUnsignedInt((byte) (cpu.cpu_memory[(a+i)&0xffff] & 0xff))));
         }
     }
 

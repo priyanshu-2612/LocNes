@@ -18,6 +18,7 @@ public class CPU {
     byte[] cpu_memory = new byte[65536]; // 2 KB
     Controller controller;
     int[] shift_register_4021; // 1 byte each
+    boolean testMode = false;
 
     public CPU(){
         SP = (byte) 0xFD;
@@ -33,6 +34,10 @@ public class CPU {
 
     public void writeTo(int index, byte data){
         index = index & 0xffff;
+        if(testMode){
+            cpu_memory[index] = data;
+            return;
+        }
         if(index <= 0x1fff){
             cpu_memory[index&0x07ff] = data;
         }
@@ -50,6 +55,9 @@ public class CPU {
 
     public int getData(int index){
         index = index & 0xffff;
+        if(testMode){
+            return cpu_memory[index]&0xff;
+        }
         if(index <=0x1fff) {
             index = (index&0x07ff);
             return (cpu_memory[index]&0xff);
@@ -137,5 +145,13 @@ public class CPU {
 
     public void setPpu(PPU ppu) {
         this.ppu = ppu;
+    }
+
+    public void turnOnTestMode(){
+        testMode = true;
+    }
+
+    public void turnOffTestMode(){
+        testMode = false;
     }
 }

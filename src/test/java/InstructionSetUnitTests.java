@@ -2,17 +2,21 @@ package test.java;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import static org.junit.Assert.*;
 import main.java.CPU;
 import main.java.Decoder;
 import main.java.InstructionSet;
 import main.java.PPU;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class InstructionSetUnitTests {
 
@@ -23,18 +27,26 @@ public class InstructionSetUnitTests {
     File jsonFile;
     ObjectMapper objectMapper = new ObjectMapper();
 
-    @Test
-    public void test() throws IOException {
+    static Stream<String> Opcodes() {
+        return DocumentedOpcodes.LEGAL_OPCODES
+                .stream()
+                .map(op -> String.format("%02X", op));
+    }
+
+    @ParameterizedTest(name = "Opcode 0x{0}")
+    @MethodSource("Opcodes")
+    void opcodeSuite(String hex) throws IOException {
 
         ppu.turnOnTestMode();
+        cpu.turnOnTestMode();
         cpu.setPpu(ppu);
 
-        int counter=0;
-        String hex, path;
-        while(counter <= 0xff){
+//        int counter=0;
+        String path;
+//        while(counter <= 0xff){
             //String hex = String.format("%02X", value); also works
-            hex = Integer.toHexString(counter);
-            hex = String.format("%2s", hex).replace(" ", "0");
+//            hex = Integer.toHexString(opcode);
+//            hex = String.format("%2s", hex).replace(" ", "0");
             System.out.println(hex);
             path = "C:/Users/prash/Downloads/ProcessorTests-main/ProcessorTests-main/nes6502/v1/" + hex + ".json";
             System.out.println("Opening " + path);
@@ -48,29 +60,31 @@ public class InstructionSetUnitTests {
                 String[] instruction = tc.name.split(" ");
                 System.out.println(Arrays.toString(instruction));
 
-                decoder.run_one_cpu_cycle(instruction);
+                cpu.setPC((short) tc.getInitial().pc);
+//                decoder.run_one_cpu_cycle(instruction);
+                decoder.run_one_cycle();
 
                 CpuState csFinal = tc.getFinalState();
                 CpuState csMyFinal = getFinalStateAfterExecution();
 
-                assertEquals("PC should be equal", csFinal.getPc(), csMyFinal.getPc());
-                assertEquals("S should be equal", csFinal.getS(), csMyFinal.getS());
-                assertEquals("A should be equal", csFinal.getA(), csMyFinal.getA());
-                assertEquals("X should be equal", csFinal.getX(), csMyFinal.getX());
-                assertEquals("Y should be equal", csFinal.getY(), csMyFinal.getY());
+                assertEquals(csFinal.getPc(), csMyFinal.getPc(), "PC should be equal");
+                assertEquals(csFinal.getS(), csMyFinal.getS(), "S should be equal");
+                assertEquals(csFinal.getA(), csMyFinal.getA(), "A should be equal");
+                assertEquals(csFinal.getX(), csMyFinal.getX(), "X should be equal");
+                assertEquals(csFinal.getY(), csMyFinal.getY(), "Y should be equal");
 //                assertEquals("P should be equal", csFinal.getP(), csMyFinal.getP());
 
                 for(int j=0; j<csFinal.ram.size() ; j++){
                    int address = csFinal.ram.get(j).get(0);
-                   int value = csFinal.ram.get(j).get(1);
 
                    int valAtTheEnd = cpu.getData(address);
                    int valThatShouldBe = csFinal.ram.get(j).get(1);
 
-                   assertEquals("At location " + address + " should be " + value, valAtTheEnd, valThatShouldBe );
+                   assertEquals(valThatShouldBe, valAtTheEnd, "At location " + address + " should be " + valThatShouldBe);
                 }
             }
-        }
+//        }
+//        counter++;
     }
 
     public void initialize_ram(CpuState cpuState){
@@ -83,8 +97,8 @@ public class InstructionSetUnitTests {
         cpu.setStatus((byte) cpuState.p);
         for(int i=0; i<cpuState.ram.size() ; i++){
             cpu.writeTo(cpuState.ram.get(i).get(0), (byte)((int)cpuState.ram.get(i).get(1) & 0xff) );
-            System.out.println("WROTE " + ((int)cpuState.ram.get(i).get(1) & 0xff) + " at " + cpuState.ram.get(i).get(0));
-            System.out.println("VALUE READ IS " + cpu.getData(cpuState.ram.get(i).get(0)));
+//            System.out.println("WROTE " + ((int)cpuState.ram.get(i).get(1) & 0xff) + " at " + cpuState.ram.get(i).get(0));
+//            System.out.println("VALUE READ IS " + cpu.getData(cpuState.ram.get(i).get(0)));
         }
     }
 
