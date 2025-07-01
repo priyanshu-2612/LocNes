@@ -16,15 +16,17 @@ public class Tester {
     Cartridge cartridge;
     Bus bus;
     Scene scene;
+    long SystemCounter = 0;
 
     Tester(){
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
+        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/nestest.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Balloon_fight.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/vram_access.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice_hockey.nes");
-        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice Climber (Japan) (En).zip");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice Climber (Japan) (En)/Ice Climber (Japan) (En).nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/Pac-Man (U) [!]/Pac-Man (U) [!].nes");
         cartridge.InitCartridge();
         cpu = new CPU();
         ppu = new PPU();
@@ -34,22 +36,46 @@ public class Tester {
     }
 
     public int cycle(){
-            int cycles, cpu_cycles;
-            cycles = decoder.run_one_cycle();
-            printFlags();
-            //System.out.println("The instruction took " + cycles + " to execute");
-//                        cpu.ppu_registers_dump(ppu_Reg_values);
+            int cycles=0, cpu_cycles;
+            if(cpu.dma_transfer){
+                if(cpu.dma_dummy){
+                    if(SystemCounter % 2 == 1){
+                        cpu.dma_dummy = false;
+                    }
+                }
+                else{
+                    if(SystemCounter % 2 == 0){
+                        int readAddress = (cpu.dma_page << 8) | (cpu.dma_address);
+                        cpu.dma_data = ppu.cpuRead(readAddress);
+                    }
+                    else{
+                        ppu.writeToOAM(cpu.dma_address, (byte) cpu.dma_data);
+                        cpu.dma_address++;
+                        cpu.dma_address &= 0xFF;
+
+                        if(cpu.dma_address == 0x00){
+                            //dma transfer done
+                            cpu.dma_transfer = false;
+                            cpu.dma_dummy = true;
+                        }
+
+                    }
+                }
+            }
+            else{
+                cycles = decoder.run_one_cycle();
+            }
             cpu_cycles = cycles;
             cycles *= 3;
-//            //System.out.println("$4016 has " + (cpu.cpu_memory[0x4016]&0xff));
             while (cycles-- > 0) {
                     ppu.cycle();
                 if (ppu.nmi) {
                     ppu.nmi = false;
-                    //System.out.println("LALALALLALALLALAALALLALALLALALALALALLALALALALALLALALA");
                     decoder.is.nmi();
                 }
             }
+            SystemCounter++;
+            SystemCounter &= 0xFFFF;
             return  cpu_cycles;
     }
     public void display_pattern_table(){

@@ -20,6 +20,14 @@ public class CPU {
     int[] shift_register_4021; // 1 byte each
     boolean testMode = false;
 
+    // 1 byte each
+    int dma_page = 0x00;
+    int dma_address = 0x00;
+    int dma_data = 0x00;
+
+    boolean dma_transfer = false;
+    boolean dma_dummy = true;
+
     public CPU(){
         SP = (byte) 0xFD;
         Status = 0x24;
@@ -44,6 +52,11 @@ public class CPU {
         else if(index >= 0x2000 && index <= 0x3fff){
             index = 0x2000 + (index&0x0007);
             ppu.cpuWrite(index, data);
+        }
+        else if(index == 0x4014){
+            dma_page = data&0xff;
+            dma_address = 0x00;
+            dma_transfer = true;
         }
         else if(index >= 0x4016 && index <= 0x4017){
             shift_register_4021[index & 0x0001] = (controller.controller_input[index & 0x0001]);

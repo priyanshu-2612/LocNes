@@ -38,6 +38,15 @@ public class PPU {
     boolean nmi = false;
     CPU cpu;
     boolean testMode = false;
+    Sprite[] OAM = new Sprite[64];
+    int OAM_addr = 0x00;
+    int byteOffset = 0;
+
+    {
+        for (int i = 0; i < OAM.length; i++) {
+            OAM[i] = new Sprite();
+        }
+    }
 
     public void cycle(){
 
@@ -436,9 +445,11 @@ public class PPU {
                 write_toggle = 0;
                 return (byte) read_Status();
             case 0x2003:  //OAM address
-                return ppu_registers[addr_value-0x2000];
+                if(testMode)
+                    return ppu_registers[addr_value-0x2000];
+                break;
             case 0x2004:  //OAM data
-                return ppu_registers[addr_value-0x2000];
+                return readOAM();
             case 0x2005:  //scroll
                 if(testMode)
                     return ppu_registers[addr_value - 0x2000];
@@ -452,6 +463,32 @@ public class PPU {
         }
 
         return 0;
+    }
+
+    private byte readOAM() {
+        //reads OAM byte by byte
+        int index = byteOffset/4;
+        int member = byteOffset%4;
+
+        Sprite sprite = OAM[index];
+        int data = 0;
+        switch(member){
+            case 0:
+                data =  sprite.y;
+                break;
+            case 1:
+                data =  sprite.id;
+                break;
+            case 2:
+                data =  sprite.attribute;
+                break;
+            case 3:
+                data =  sprite.x;
+                break;
+        }
+        byteOffset++;
+        byteOffset %= 256;
+        return (byte) (data & 0xff);
     }
 
     public void cpuWrite(int addr , byte data){
@@ -475,10 +512,12 @@ public class PPU {
             case 0x2003:  //OAM address
                 if(testMode)
                     ppu_registers[addr_value - 0x2000] = data;
+                OAM_addr = data;
                 break;
             case 0x2004:  //OAM data
                 if(testMode)
                     ppu_registers[addr_value - 0x2000] = data;
+                writeToOAM(data);
                 break;
             case 0x2005:  //scroll
                 if(testMode)
@@ -527,6 +566,52 @@ public class PPU {
                 }
                 break;
         }
+    }
+
+    private void writeToOAM(byte data) {
+        //writes to the OAM memory at the OAM_addr
+        int index = byteOffset/4;
+        int member = byteOffset%4;
+
+        Sprite sprite = OAM[index];
+        switch(member){
+            case 0:
+                sprite.y = data;
+                break;
+            case 1:
+                sprite.id = data;
+                break;
+            case 2:
+                sprite.attribute = data;
+                break;
+            case 3:
+                sprite.x = data;
+                break;
+        }
+        byteOffset++;
+        byteOffset %= 256;
+    }
+
+     void writeToOAM(int address, byte data) {
+        //to help the Tester write to the OAM during DMA
+         int index = address/4;
+         int member = address%4;
+
+         Sprite sprite = OAM[index];
+         switch(member){
+             case 0:
+                 sprite.y = data;
+                 break;
+             case 1:
+                 sprite.id = data;
+                 break;
+             case 2:
+                 sprite.attribute = data;
+                 break;
+             case 3:
+                 sprite.x = data;
+                 break;
+         }
     }
 
 
