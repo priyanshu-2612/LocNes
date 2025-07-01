@@ -6,4 +6,13 @@ public class Sprite {
     int id; // Tile ID from pattern memory
     int attribute; // how the sprite should be rendered
     int x; // X pos of the sprite
+
+    public Sprite getCopy(){
+        Sprite sprite = new Sprite();
+        sprite.y = y;
+        sprite.id = id;
+        sprite.attribute = attribute;
+        sprite.x = x;
+        return sprite;
+    }
 }

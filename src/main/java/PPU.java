@@ -4,6 +4,7 @@ import javafx.scene.transform.Affine;
 import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.awt.Color;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class PPU {
     Display display;
@@ -41,6 +42,10 @@ public class PPU {
     Sprite[] OAM = new Sprite[64];
     int OAM_addr = 0x00;
     int byteOffset = 0;
+    Sprite[] spriteScanline = new Sprite[8];
+    int spriteCount = 0;
+    int[] sprite_shifter_pattern_lo = new int[8];
+    int[] sprite_shifter_pattern_hi = new int[8];
 
     {
         for (int i = 0; i < OAM.length; i++) {
@@ -63,6 +68,13 @@ public class PPU {
 
             if(scanline == -1 && cycle == 1){
                 clearVBlank();
+                clearSpriteOverflow();
+                clearSpriteZeroHit();
+
+                for(int i=0; i<8 ; i++){
+                    sprite_shifter_pattern_lo[i] = 0;
+                    sprite_shifter_pattern_hi[i] = 0;
+                }
             }
 
             if((cycle >= 2 && cycle < 258)||(cycle >= 321 && cycle < 338)){
@@ -135,6 +147,114 @@ public class PPU {
                 bg_next_tile_id = ppuRead((0x2000 | (V & 0x0FFF)));
             }
 
+//            Foreground Rendering ------YEEEEEEEEEESSSSS!!!!!!!!!!--------------
+            if(scanline >=0 && cycle == 257){
+                // Firstly, clear out the sprite memory. This memory is used to store the
+                // sprites to be rendered. It is not the OAM.
+                for(int i=0 ; i<spriteScanline.length ; i++) {
+                    spriteScanline[i] = new Sprite();
+                    spriteScanline[i].y = 0xFF;
+                    spriteScanline[i].id = 0xFF;
+                    spriteScanline[i].attribute = 0xFF;
+                    spriteScanline[i].x = 0xFF;
+                }
+                for (int i = 0; i < 8; i++)
+                {
+                    sprite_shifter_pattern_lo[i] = 0;
+                    sprite_shifter_pattern_hi[i] = 0;
+                }
+
+                    spriteCount = 0;
+                    int OAMEntry = 0;
+
+                    while(OAMEntry < 64 && spriteCount < 9){
+                        int diff = scanline - (OAM[OAMEntry].y & 0xff);
+                        if(diff >=0 && diff < (((ppu_registers[Controller_Address - 0x2000]&0xff)&0x20) != 0 ? 16 : 8 )){
+                            if(spriteCount < 8){
+                                spriteScanline[spriteCount] = OAM[OAMEntry].getCopy();
+                                spriteCount++;
+                            }
+                        }
+                        OAMEntry++;
+                    }
+                    if(spriteCount > 8)
+                        ppu_registers[Status - 0x2000] |= 0x20; //set sprite overflow
+
+            }
+
+            if(cycle == 340){
+
+//                if(scanline < 240){ // helped debug
+//                    System.out.printf("scan=%3d  found=%d  y0=%02X  firstX=%02X\n",
+//                            scanline, spriteCount,
+//                            spriteCount>0? spriteScanline[0].y : 0,
+//                            spriteCount>0? spriteScanline[0].x : 0);
+//                }
+
+                for(int i=0; i<spriteCount ; i++){
+                    int sprite_pattern_bits_lo=0, sprite_pattern_bits_hi; // 1 byte
+                    int sprite_pattern_address_lo, sprite_pattern_address_hi; // 2 byte
+
+                    if(((ppu_registers[Controller_Address - 0x2000]&0xff)&0x20) != 0){
+                        //8x16 sprite
+                        if((spriteScanline[i].attribute & 0x80) !=0) {
+                            //flipped vertically
+                            if(scanline - spriteScanline[i].y < 8){
+                                //top half
+                                sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
+                                        | (((spriteScanline[i].id & 0xfe) + 1) << 4)
+                                        | ((scanline - (spriteScanline[i].y & 0xff)) & 0x07);
+                            }
+                            else{
+                                //bottom half
+                                sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
+                                        | ((spriteScanline[i].id & 0xfe) << 4)
+                                        | ((scanline - spriteScanline[i].y) & 0x07);
+                            }
+                        }
+                        else{
+                            if(scanline - spriteScanline[i].y < 8){
+                                //top half
+                                sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
+                                                                | ((spriteScanline[i].id & 0xfe) << 4)
+                                                                    | ((scanline - (spriteScanline[i].y & 0xff)) & 0x07);
+                            }
+                            else{
+                                //bottom half
+                                sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
+                                        | (((spriteScanline[i].id & 0xfe) + 1) << 4)
+                                        | ((scanline - (spriteScanline[i].y & 0xff)) & 0x07);
+                            }
+                        }
+                    }
+                    else{
+                        //8x8 sprites
+                        if((spriteScanline[i].attribute & 0x80) !=0){
+                            //flipped vertically
+                            sprite_pattern_address_lo = ((ppu_registers[Controller_Address - 0x2000] & 0x8) << 12)
+                                    | ((spriteScanline[i].id & 0xff) << 4)
+                                    | (7 - (scanline - (spriteScanline[i].y & 0xff)));
+                        }
+                        else{
+                            sprite_pattern_address_lo = ((ppu_registers[Controller_Address - 0x2000] & 0x8) << 12)
+                                                            | ((spriteScanline[i].id & 0xff) << 4)
+                                                                | (scanline - (spriteScanline[i].y & 0xff));
+                        }
+                    }
+                    sprite_pattern_address_hi = sprite_pattern_address_lo + 8;
+                    sprite_pattern_bits_lo = ppuRead(sprite_pattern_address_lo);
+                    sprite_pattern_bits_hi = ppuRead(sprite_pattern_address_hi);
+
+                    if((spriteScanline[i].attribute & 0x40) !=0){
+                        sprite_pattern_bits_lo = flipBits(sprite_pattern_bits_lo);
+                        sprite_pattern_bits_hi = flipBits(sprite_pattern_bits_hi);
+                    }
+
+                    sprite_shifter_pattern_lo[i] = sprite_pattern_bits_lo;
+                    sprite_shifter_pattern_hi[i] = sprite_pattern_bits_hi;
+                }
+            }
+
             if (scanline == -1 && cycle >= 280 && cycle < 305)
             {
                 // End of vertical blank period so reset the Y address ready for rendering
@@ -199,12 +319,74 @@ public class PPU {
             //System.out.println("Palette is " + Integer.toHexString(Byte.toUnsignedInt(bg_palette)) );
         }
 
+        byte fg_pixel = 0;
+        byte fg_palette = 0;
+        int fg_priority = 0;
 
+        if(spriteRenderingEnabled()){
+
+            for(int i=0; i<8 ; i++){
+                if(spriteScanline[i].x == 0){
+                    int fg_pixel_lo = (sprite_shifter_pattern_lo[i] & 0x80) != 0 ? 1 : 0;
+                    int fg_pixel_hi = (sprite_shifter_pattern_hi[i] & 0x80) != 0 ? 1 : 0;
+                    fg_pixel = (byte) ((fg_pixel_hi << 1) | fg_pixel_lo);
+
+                    fg_palette = (byte) ((spriteScanline[i].attribute & 0x03) + 0x04);
+                    fg_priority = (spriteScanline[i].attribute & 0x20) != 0 ? 0 : 1;
+
+                    if (fg_pixel != 0)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
         // Now we have a final pixel colour, and a palette for this cycle
         // of the current scanline. Lets at long last, draw that ^&%*er :P
 
+        byte pixel_final = 0x00;   // The FINAL Pixel...
+        byte palette_final = 0x00;
+
+        if (bg_pixel == 0 && fg_pixel == 0)
+        {
+            // The background pixel is transparent
+            // The foreground pixel is transparent
+            // No winner, draw "background" colour
+            pixel_final = 0x00;
+            palette_final = 0x00;
+        }
+        else if (bg_pixel == 0 && fg_pixel > 0)
+        {
+            // The background pixel is transparent
+            // The foreground pixel is visible
+            // Foreground wins!
+            pixel_final = fg_pixel;
+            palette_final = fg_palette;
+        }
+        else if (bg_pixel > 0 && fg_pixel == 0)
+        {
+            // The background pixel is visible
+            // The foreground pixel is transparent
+            // Background wins!
+            pixel_final = bg_pixel;
+            palette_final = bg_palette;
+        }
+        else if (bg_pixel > 0 && fg_pixel > 0) {
+            // The background pixel is visible
+            // The foreground pixel is visible
+            // Hmmm...
+            if (fg_priority==1) {
+                // Foreground cheats its way to victory!
+                pixel_final = fg_pixel;
+                palette_final = fg_palette;
+            } else {
+                // Background is considered more important!
+                pixel_final = bg_pixel;
+                palette_final = bg_palette;
+            }
+        }
         //sprScreen->SetPixel(cycle - 1, scanline, GetColourFromPaletteRam(bg_palette, bg_pixel));
-        display.setPixel(cycle-1 , scanline, getColor(bg_palette, bg_pixel));
+        display.setPixel(cycle-1 , scanline, getColor(palette_final, pixel_final));
 
         // Advance renderer - it never stops, it's relentless
 
@@ -220,6 +402,20 @@ public class PPU {
         }
     }
 
+    private void clearSpriteZeroHit() {
+        ppu_registers[Status-0x2000] &= ~ 0x40;
+    }
+
+    private void clearSpriteOverflow() {
+        ppu_registers[Status-0x2000] &= ~0x20;
+    }
+
+    public int flipBits(int b){
+        b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+        b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+        b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+        return b;
+    }
 
     public int getColor(int palette , int color){
         int offset = palette* 4 + color;
@@ -261,6 +457,21 @@ public class PPU {
             bg_shifter_attrib_lo &= 0xffff;
             bg_shifter_attrib_hi <<= 1;
             bg_shifter_attrib_hi &= 0xffff;
+
+            if((ppu_registers[Mask-0x2000] & 0x10) !=0 && cycle >= 1 && cycle < 258){
+
+                for(int i=0; i<spriteCount ; i++){
+                    if( (spriteScanline[i].x & 0xff) > 0){
+                        spriteScanline[i].x = (spriteScanline[i].x - 1)&0xff;
+                    }
+                    else{
+                        sprite_shifter_pattern_lo[i] <<= 1;
+                        sprite_shifter_pattern_lo[i] &= 0xffff;
+                        sprite_shifter_pattern_hi[i] <<= 1;
+                        sprite_shifter_pattern_hi[i] &= 0xffff;
+                    }
+                }
+            }
         }
     }
 
@@ -467,8 +678,8 @@ public class PPU {
 
     private byte readOAM() {
         //reads OAM byte by byte
-        int index = byteOffset/4;
-        int member = byteOffset%4;
+        int index = OAM_addr/4;
+        int member = OAM_addr%4;
 
         Sprite sprite = OAM[index];
         int data = 0;
@@ -555,13 +766,10 @@ public class PPU {
 
             case 0x2007:  //ppu data
                 write_to_Data(data);
-                //System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[0]));
                 if((ppu_registers[Controller_Address-0x2000] & 0x04) != 0){
-//                        read_location += 32;
                           V += 32;
                 }
                 else {
-//                        read_location += 1;
                     V += 1;
                 }
                 break;
@@ -570,8 +778,8 @@ public class PPU {
 
     private void writeToOAM(byte data) {
         //writes to the OAM memory at the OAM_addr
-        int index = byteOffset/4;
-        int member = byteOffset%4;
+        int index = OAM_addr/4;
+        int member = OAM_addr%4;
 
         Sprite sprite = OAM[index];
         switch(member){
@@ -617,10 +825,6 @@ public class PPU {
 
     public int read_Status(){
         int data = ppu_registers[Status-0x2000] & 0xE0;
-//        data = (data | PPU_Read_Buffer & 0x1f); //Some games may require this erroneous behaviour
-//        int data = cpuRead((short) Status) & 0xE0;
-//        ppu_registers[Status-0x2000] &= (byte) 0x80; //clear the V-Blank bit
-//        cpuWrite((short) Status, (byte) (ppuRead((short) Status) & 0x80));
         ppu_registers[Status-0x2000] = (byte) (ppu_registers[Status-0x2000] & 0x7f); //clear the V-Blank bit
         address_latch = 0;
         return data;
@@ -630,41 +834,31 @@ public class PPU {
         ppu_registers[Address-0x2000] = (byte) (value & 0xff);
         if(address_latch==0) {
             read_location = ((value & 0xff)<<8)&0xff00;
-            //System.out.println("Read Location High is set to " + Integer.toHexString(read_location & 0xfffff));
             address_latch = 1;
         }
         else {
             read_location += value & 0xff;
-            //System.out.println("Read Low is set to " + Integer.toHexString(read_location & 0xffff));
             address_latch = 0;
         }
-//        update_status();
     }
 
     public void update_status(){
         if(getI()){
             ppu_registers[Status-0x2000] = (byte) ((ppu_registers[Controller_Address-0x2000]+ 32)&0xff);
-            //System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[Controller_Address-0x2000]));
         }
         else{
             ppu_registers[Status-0x2000] = (byte) ((ppu_registers[Controller_Address-0x2000]+1)&0xff);
-            //System.out.println("PPUControl is " + Integer.toHexString(ppu_registers[Controller_Address-0x2000]));
         }
     }
 
     public boolean getI(){
         return (((ppu_registers[Controller_Address-0x2000]) & 0x04) != 0);
-//        return (((ppuRead((short) Controller_Address) >> 2) & 0x01) == 1);
     }
 
     public int read_from_Data(){
         int return_value;
         return_value = PPU_Read_Buffer & 0xff;
-//        PPU_Read_Buffer = ppuRead(read_location)&0xff;
         PPU_Read_Buffer = ppuRead(V)&0xff;
-//        update_status();
-        // However, if the address was in the palette range, the
-        // data is not delayed, so it returns immediately
         if (V >= 0x3F00) return_value = PPU_Read_Buffer;
         if((ppu_registers[Controller_Address-0x2000] & 0x04) != 0){
             V += 32;

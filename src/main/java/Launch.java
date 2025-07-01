@@ -53,7 +53,7 @@ public class Launch extends Application {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
-                System.out.println("Key is " + keyEvent.getCode().toString());
+//                System.out.println("Key is " + keyEvent.getCode().toString());
                 switch(keyEvent.getCode().toString()){
                     case "X":
                         t.cpu.controller.controller_input[0] |= 0x80;
@@ -85,7 +85,7 @@ public class Launch extends Application {
         scene.addEventHandler(KeyEvent.KEY_RELEASED, new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
-                System.out.println("Key is " + keyEvent.getCode().toString());
+//                System.out.println("Key is " + keyEvent.getCode().toString());
                 switch(keyEvent.getCode().toString()){
                     case "X":
                         t.cpu.controller.controller_input[0] ^= 0x80;

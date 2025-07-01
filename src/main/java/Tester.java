@@ -46,7 +46,7 @@ public class Tester {
                 else{
                     if(SystemCounter % 2 == 0){
                         int readAddress = (cpu.dma_page << 8) | (cpu.dma_address);
-                        cpu.dma_data = ppu.cpuRead(readAddress);
+                        cpu.dma_data = cpu.getData(readAddress);
                     }
                     else{
                         ppu.writeToOAM(cpu.dma_address, (byte) cpu.dma_data);
