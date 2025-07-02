@@ -218,6 +218,7 @@ public class Decoder {
                     }
                     catch(IllegalArgumentException | InvocationTargetException | IllegalAccessException e){
                         e.printStackTrace();
+                        System.exit(0);
                     }
 
                     break;

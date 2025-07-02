@@ -1,7 +1,5 @@
 package main.java;
 import javafx.scene.transform.Affine;
-
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.Arrays;
@@ -87,23 +85,15 @@ public class PPU {
                         LoadBackgroundShifters();
                         int nt_offset = 0;
                         nt_offset = 0x2000 | (V & 0x0fff);
-                        //System.out.println("Accessing nametable byte at address " +Integer.toHexString(nt_offset));
                         nametableByte = ppuRead(nt_offset)&0xff;
-                        //System.out.println("Read " + Integer.toHexString(nametableByte) + " from there");
-//                        nametableByte <<= 4;
                         bg_next_tile_id = nametableByte;
                         break;
                     case 2:
-                        //System.out.println("V is " + Integer.toBinaryString(V));
                         int coarse_x = V & 0x1f , coarse_y = (V & 0x03e0) >> 5;
-                        //System.out.println("At coordinates x: " + coarse_x +" y: " + coarse_y);
                         int blockx = ((coarse_x >> 2)& 0x7) , blocky = ((coarse_y >> 2)& 0x7);  //each is of 3 bits
                         int attributeOffset = ((blocky << 3)&0x38) + blockx;
                         int nt = ((V & 0x0c00) >> 10);
-                        //System.out.println("In nametable " + Integer.toBinaryString(nt));
                         bg_next_tile_attrib = ppuRead(0x23C0 | nt<<10 | attributeOffset);
-                        //System.out.println("Attribute address is " + Integer.toHexString(0x23C0 | nt<<10 | blockx));
-                        //System.out.println("Attribute byte is " + Integer.toHexString(bg_next_tile_attrib));
                         if ((coarse_y & 0x02)!=0) bg_next_tile_attrib >>= 4;
                         if ((coarse_x & 0x02)!=0) bg_next_tile_attrib >>= 2;
                         bg_next_tile_attrib &= 0x03;
@@ -111,17 +101,13 @@ public class PPU {
                     case 4:
                         int fine_y = (V & 0x7000) >> 12;
                         fine_y = fine_y & 0x7;
-                        //System.out.println("PPUControl is " + Integer.toBinaryString(ppu_registers[0]&0xff));
                         int address = ( (((ppu_registers[Controller_Address-0x2000]&0x10)>>4)<<12)&0x1000) + (bg_next_tile_id << 4) + fine_y ;
-//                        int address = ( 0x1000 + (bg_next_tile_id << 4) + fine_y) ;
-                        //System.out.println("Loading sprite at " + Integer.toHexString(address) + " in ppu memory");
                         bg_next_tile_lsb = ppuRead(address)&0xff;
                         break;
                     case 6:
                         int fine_y2 = (V & 0x7000) >> 12;
                         fine_y2 = fine_y2&0x7;
                         int address2 = ( (((ppu_registers[Controller_Address-0x2000]&0x10)>>4)<<12)&0x1000) + (bg_next_tile_id << 4) + fine_y2 ;
-//                        int address2 = ( 0x1000 + (bg_next_tile_id << 4) + fine_y2) ;
                         bg_next_tile_msb = ppuRead(address2+8)&0xff;
                         break;
                     case 7:
@@ -433,12 +419,12 @@ public class PPU {
     }
 
     private void clearSpriteZeroHit() {
-        ppu_registers[Status-0x2000] &= ~ 0x40;
+        ppu_registers[Status-0x2000] &= 0xBF; //(~0x40)
         ppu_registers[Status-0x2000] &= 0xff;
     }
 
     private void clearSpriteOverflow() {
-        ppu_registers[Status-0x2000] &= ~0x20;
+        ppu_registers[Status-0x2000] &= 0xDF; //(~0x20)
         ppu_registers[Status-0x2000] &= 0xff;
     }
 
@@ -446,24 +432,21 @@ public class PPU {
         b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
         b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
         b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+        b &= 0xff;
         return b;
     }
 
     public int getColor(int palette , int color){
         int offset = palette* 4 + color;
-        //return (ppu_memory[0x3f00 + offset] & 0xff);
         return (ppuRead( (0x3f00 + offset)) & 0xff);
     }
 
     public int getVBlank(){
-//        if( (cpu.cpu_memory[Status]&0x80) > 0) return 1;
         if( (ppu_registers[Status-0x2000]&0x80) > 0) return 1;
         else return 0;
     }
 
     public void setVBlank(){
-//        cpu.cpu_memory[Status] = (byte) ((cpu.cpu_memory[Status] | 0x80) & 0xff);
-//        ppuWrite((short) Status, (byte) ((ppuRead((short) Status) | 0x80) & 0xff));
         ppu_registers[Status-0x2000] = (byte) ((ppu_registers[Status-0x2000] | 0x80) & 0xff);
     }
 
@@ -494,7 +477,7 @@ public class PPU {
 
                 for(int i=0; i<spriteCount ; i++){
                     if( (spriteScanline[i].x & 0xff) > 0){
-                        spriteScanline[i].x = (spriteScanline[i].x - 1)&0xff;
+                        spriteScanline[i].x = ((spriteScanline[i].x & 0xff) - 1)&0xff;
                     }
                     else{
                         sprite_shifter_pattern_lo[i] <<= 1;
@@ -513,12 +496,6 @@ public class PPU {
 
         bg_shifter_attrib_lo  =  ((bg_shifter_attrib_lo & 0xFF00) | (((bg_next_tile_attrib & 0b01)==1) ? 0xFF : 0x00))&0xffff;
         bg_shifter_attrib_hi  =  ((bg_shifter_attrib_hi & 0xFF00) | (((bg_next_tile_attrib & 0b10)==2) ? 0xFF : 0x00))&0xffff;
-
-        //System.out.println("BG_SHIFTER_PATTERN_HI : "+ Integer.toBinaryString(bg_shifter_pattern_hi));
-        //System.out.println("BG_SHIFTER_PATTERN_LO : "+ Integer.toBinaryString(bg_shifter_pattern_lo));
-
-        //System.out.println("BG_SHIFTER_ATTRIBUTE_HI : "+ Integer.toBinaryString(bg_shifter_attrib_hi));
-        //System.out.println("BG_SHIFTER_ATTRIBUTE_LO : "+ Integer.toBinaryString(bg_shifter_attrib_lo));
     }
 
     public void IncrementScrollX(){
@@ -537,7 +514,6 @@ public class PPU {
     public void IncrementScrollY(){
         int fine_y = (((V&0x7000) >> 12)&0x7);
         int coarse_y = (((V & 0x3e0)>>5) & 0x1f);
-        //System.out.println("Coarse y is " +coarse_y);
         if(backgRenderingEnabled() || spriteRenderingEnabled()) {
             if (fine_y < 7) {
                 fine_y++;
@@ -554,8 +530,6 @@ public class PPU {
             V = ((V&0x0fff)| ((fine_y<<12)&0x7000) );  //set fine_y
             V = ((V&0x7c1f)| ((coarse_y<<5)&0x03e0) );  //set coarse_y
         }
-        //System.out.println("Coarse y updated to " +coarse_y);
-        //System.out.println("Incremented Scroll Y");
     }
 
     public void flip_nametablex_bit(){
@@ -585,13 +559,9 @@ public class PPU {
     public int ppuRead(int addr){
         int addr_value = addr;
         addr_value  &= 0xffff;
-//        //System.out.println("PPU Read Address is " + Integer.toHexString(addr));
         if(addr_value <= 0x1fff){
             int pt_num = (addr & 0x1000) >> 12;
-            int pt_offset = addr_value & 0x0fff;
-//            //System.out.println("Returning value from Pt " + pt_num + " at address " + Integer.toHexString(pt_offset));
-//            //System.out.println("Value returned is " + Integer.toHexString(patterntable[(addr_value & 0x1000) >> 12][addr_value & 0x0fff]));
-            return patterntable[pt_num][addr_value & 0x0fff]&0xff;
+            int pt_offset = addr_value & 0x0fff; return patterntable[pt_num][addr_value & 0x0fff]&0xff;
         }
         else if(addr_value <= 0x2fff){
             addr_value  &= 0x0fff;
@@ -634,7 +604,6 @@ public class PPU {
     public void ppuWrite(short addr , byte data){
         int addr_value = Short.toUnsignedInt(addr);
         addr_value &= 0x3fff;
-        //System.out.println("PPU Write address is " + Integer.toHexString(addr_value));
         if(addr_value <= 0x1fff){
             patterntable[addr_value & 0x1000 >> 12][addr_value & 0x0fff] = data;
         }
@@ -710,6 +679,7 @@ public class PPU {
 
     private byte readOAM() {
         //reads OAM byte by byte
+        OAM_addr &= 0xff;
         int index = OAM_addr/4;
         int member = OAM_addr%4;
 
@@ -729,8 +699,8 @@ public class PPU {
                 data =  sprite.x;
                 break;
         }
-        byteOffset++;
-        byteOffset %= 256;
+//        byteOffset++;
+//        byteOffset %= 256;
         return (byte) (data & 0xff);
     }
 
@@ -742,11 +712,9 @@ public class PPU {
             case 0x2000:  //control
                 ppu_registers[Controller_Address-0x2000] = data;
                 T =  (((T&0xf3ff) | ((data & 0x3) << 10)) & 0x7fff) & 0xffff;
-                //System.out.println("T is " + Integer.toHexString(T));
-                //System.out.println("PPUControl is " + Integer.toHexString(Byte.toUnsignedInt(ppu_registers[0])));
                 break;
             case 0x2001:  //mask
-                ppu_registers[1] = data;
+                ppu_registers[addr_value - 0x2000] = data;
                 break;
             case 0x2002:  //status
                 if(testMode)
@@ -755,7 +723,7 @@ public class PPU {
             case 0x2003:  //OAM address
                 if(testMode)
                     ppu_registers[addr_value - 0x2000] = data;
-                OAM_addr = data;
+                OAM_addr = data&0xff;
                 break;
             case 0x2004:  //OAM data
                 if(testMode)
@@ -769,7 +737,6 @@ public class PPU {
                 if(write_toggle==0){
                     T = ( ((T&0xffe0) | ((d >> 3)&0x1f) ) & 0x7fff) & 0xffff;
                     X =  (d & 0x07) & 0xff;
-                    //System.out.println("X changed to  " + Integer.toHexString(X));
                     write_toggle = 1;
                 }
                 else{
@@ -782,7 +749,6 @@ public class PPU {
             case 0x2006:  //ppu address
                 if(testMode)
                     ppu_registers[addr_value - 0x2000] = data;
-//                write_to_address_reg(data);
                 int dad = data & 0xff;
                 if(write_toggle==0){
                     T =  (( (T&0xc0ff) | ((dad & 0b00111111) << 8)) & 0x7fff)&0xffff;
@@ -810,26 +776,27 @@ public class PPU {
 
     private void writeToOAM(byte data) {
         //writes to the OAM memory at the OAM_addr
+        OAM_addr &= 0xff;
         int index = OAM_addr/4;
         int member = OAM_addr%4;
 
         Sprite sprite = OAM[index];
         switch(member){
             case 0:
-                sprite.y = data;
+                sprite.y = data & 0xff;
                 break;
             case 1:
-                sprite.id = data;
+                sprite.id = data & 0xff;
                 break;
             case 2:
-                sprite.attribute = data;
+                sprite.attribute = data & 0xff;
                 break;
             case 3:
-                sprite.x = data;
+                sprite.x = data & 0xff;
                 break;
         }
-        byteOffset++;
-        byteOffset %= 256;
+//        byteOffset++;
+//        byteOffset %= 256;
     }
 
      void writeToOAM(int address, byte data) {
@@ -840,16 +807,16 @@ public class PPU {
          Sprite sprite = OAM[index];
          switch(member){
              case 0:
-                 sprite.y = data;
+                 sprite.y = data & 0xff;
                  break;
              case 1:
-                 sprite.id = data;
+                 sprite.id = data & 0xff;
                  break;
              case 2:
-                 sprite.attribute = data;
+                 sprite.attribute = data & 0xff;
                  break;
              case 3:
-                 sprite.x = data;
+                 sprite.x = data & 0xff;
                  break;
          }
     }
@@ -869,7 +836,7 @@ public class PPU {
             address_latch = 1;
         }
         else {
-            read_location += value & 0xff;
+            read_location += (value & 0xff);
             address_latch = 0;
         }
     }
@@ -902,10 +869,8 @@ public class PPU {
     }
 
     public void write_to_Data(byte data){
-//        int write_location = read_location;
         int write_location = V;
         ppuWrite((short) (write_location), (byte) (data & 0xff));
-        //System.out.println("Wrote " + Integer.toHexString((data & 0xff)) + " to 0x" + Integer.toHexString(write_location));
     }
 
 

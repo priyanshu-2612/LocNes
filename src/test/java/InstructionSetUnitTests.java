@@ -72,7 +72,7 @@ public class InstructionSetUnitTests {
                 assertEquals(csFinal.getA(), csMyFinal.getA(), "A should be equal");
                 assertEquals(csFinal.getX(), csMyFinal.getX(), "X should be equal");
                 assertEquals(csFinal.getY(), csMyFinal.getY(), "Y should be equal");
-//                assertEquals("P should be equal", csFinal.getP(), csMyFinal.getP());
+                assertEquals(csFinal.getP(), csMyFinal.getP(), "P should be equal");
 
                 for(int j=0; j<csFinal.ram.size() ; j++){
                    int address = csFinal.ram.get(j).get(0);

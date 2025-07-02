@@ -16,7 +16,7 @@ public class InstructionSet {
         boolean[] flags = {true , true , true , true};
         switch (A) {
             case Immediate:
-                sum = add(op , (byte) (cpu.Status & 0x01)); //op+C
+                sum = (op & 0xff) + (cpu.Status & 0x01); //op+C
                 sum = add(sum , cpu.Accumulator); // op+C+Alda
 //                sum = sum & 0xff;
                 setFlags(sum , flags);
@@ -69,11 +69,12 @@ public class InstructionSet {
 
                 addr = add(addr, cpu.Y);
                 addr = addr & 0xffff;
-                sum = (cpu.getData(addr)&0xff +  cpu.Status&0x01);
-                sum = add(sum, cpu.Accumulator);
+//                sum = add((byte)cpu.getData(addr) ,  cpu.Status&0x01);
+                sum = (cpu.getData(addr) +  (cpu.Status&0x01));
+                sum = (sum + (cpu.Accumulator&0xff));
                 setFlags(sum , flags);
                 checkAndSet(cpu.Accumulator & 0xff ,cpu.cpu_memory[addr]&0xff , sum);
-                cpu.Accumulator = (byte) sum;
+                cpu.Accumulator = (byte) (sum & 0xff);
                 cpu.PC += 2;
                 return 5;
 
@@ -407,8 +408,11 @@ public class InstructionSet {
         cpu.push((byte) ((cpu.PC)&0xff));
 
         setBreak();
-
+        cpu.Status |= 0x30; // set bits 5 and 4
         cpu.push(cpu.Status);
+        cpu.Status |= 0x04;                     // Set Interrupt Disable flag
+        cpu.Status &= ~0x10;                    // Clear Break flag in actual status
+        cpu.Status |= 0x20;
 
         int lo = cpu.cpu_memory[0xFFFE] & 0xFF;
         int hi = cpu.cpu_memory[0xFFFF] & 0xFF;
@@ -483,7 +487,6 @@ public class InstructionSet {
         int loc ,addr, val , acc = cpu.Accumulator, src;
         switch(A){
             case Immediate:
-
                 compare_set_flags(cpu.Accumulator,op);
                 cpu.PC += 2;
                 return 2;
@@ -496,7 +499,7 @@ public class InstructionSet {
 
             case ZeropageIndexed:
                 int address = add(op, cpu.X)&0xff;
-                val = cpu.getData(op & 0xff);
+                val = cpu.getData(address);
                 compare_set_flags(cpu.Accumulator,val);
                 cpu.PC += 2;
                 return 4;
@@ -707,6 +710,7 @@ public class InstructionSet {
         switch(A){
             case Immediate:
                 res = cpu.Accumulator ^ op;
+                res &= 0xff;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
                 cpu.PC += 2;
@@ -715,6 +719,7 @@ public class InstructionSet {
             case ZeropageAbs:
                 val = cpu.getData(op & 0xff);
                 res = cpu.Accumulator ^ val;
+                res &= 0xff;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
                 cpu.PC += 2;
@@ -724,6 +729,7 @@ public class InstructionSet {
                 int address = add(op, cpu.X)&0xff;
                 val = cpu.getData(address);
                 res = cpu.Accumulator ^ val;
+                res &= 0xff;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
                 cpu.PC += 2;
@@ -736,6 +742,7 @@ public class InstructionSet {
                 loc = (high << 8) | low;
                 val = cpu.getData(loc);
                 res = cpu.Accumulator ^ val;
+                res &= 0xff;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
                 cpu.PC += 2;
@@ -748,6 +755,7 @@ public class InstructionSet {
 
                 val = cpu.getData(loc + (cpu.Y & 0xff));
                 res = cpu.Accumulator ^ val;
+                res &= 0xff;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
                 cpu.PC += 2;
@@ -765,6 +773,7 @@ public class InstructionSet {
             case Absolute:
                 val = cpu.getData(op);
                 res = cpu.Accumulator ^ val;
+                res &= 0xff;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
                 cpu.PC += 3;
@@ -773,6 +782,7 @@ public class InstructionSet {
             case AbsoluteX:
                 val = cpu.getData(addShort(op, cpu.X));
                 res = cpu.Accumulator ^ val;
+                res &= 0xff;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
                 cpu.PC += 3;
@@ -781,6 +791,7 @@ public class InstructionSet {
             case AbsoluteY:
                 val = cpu.getData(addShort(op , cpu.Y));
                 res = cpu.Accumulator ^ val;
+                res &= 0xff;
                 cpu.Accumulator = (byte) (res);
                 setFlags(res, flags);
                 cpu.PC += 3;
@@ -1319,7 +1330,8 @@ public class InstructionSet {
 //        cpu.SP++;
 //        cpu.Status = (byte) (cpu.stack[Byte.toUnsignedInt(cpu.SP)] & 0xff);
         cpu.Status = cpu.pop();
-        cpu.Status |= 0x20;
+        cpu.Status &= 0xEF; // clearing the B flag
+        cpu.Status |= 0x20; // always 1
         cpu.PC += 1;
         return 4;
     }
@@ -1524,6 +1536,8 @@ public class InstructionSet {
 
         dump_at(0x0100 + Byte.toUnsignedInt(cpu.SP) - 5);
         cpu.Status = cpu.pop();
+        cpu.Status &= 0xCF; // Clear bits 4 (B) and 5 (U)
+        cpu.Status |= 0x20; // Set bit 5 (Unused)
 
 //        cpu.PC = (short) (Byte.toUnsignedInt(cpu.pop()) + (Byte.toUnsignedInt(cpu.pop())<<8));
         int low = cpu.pop()&0xff;
@@ -1564,18 +1578,22 @@ public class InstructionSet {
     }
 
     public void calculateBorrow(int a , int memory, int carry){
+            a &= 0xff;
+            memory &= 0xff;
+            carry &= 0x01;
             int b = memory +carry;
-//            //System.out.println("M + ~C is " + Integer.toHexString(memory));
             int m = (a & 0x80) != 0 ? 1 : 0;
             int n = (b & 0x80) != 0 ? 1 : 0;
-//            //System.out.println("M is "+ m +" N is "+ n);
             int c = a-b;
-//            //System.out.println("C is " + c);
             int s = (c & 0x80) != 0 ? 1 : 0;
-//            //System.out.println("S is "+ s);
-//            //System.out.println("Status is " + Integer.toHexString(cpu.Status));
 
-            if(m==0 && n==0 && s==1)
+//            if(m==0 && n==0 && s==1)
+//                cpu.Status &= (byte) 0xfe;
+//            else
+//                cpu.Status |= 1;
+
+        //makes it pass single step
+            if(b > a)
                 cpu.Status &= (byte) 0xfe;
             else
                 cpu.Status |= 1;
@@ -1585,7 +1603,6 @@ public class InstructionSet {
             else
                 clearOverflow();
 
-//            //System.out.println("Status is " + Integer.toHexString(cpu.Status));
 
     }
 
@@ -1599,7 +1616,7 @@ public class InstructionSet {
         switch(A){
 
             case Immediate:
-                val = cpu.Accumulator;
+                val = (cpu.Accumulator & 0xff);
                 val -= op;
                 if(!getCarry())
                     val--;
@@ -1610,7 +1627,7 @@ public class InstructionSet {
                 return 2;
 
             case ZeropageAbs:
-                val = Byte.toUnsignedInt(cpu.Accumulator);
+                val = (cpu.Accumulator & 0xff);
                 val -= cpu.getData(op & 0xff);
                 if(!getCarry())
                     val--;
@@ -1655,7 +1672,7 @@ public class InstructionSet {
 
                 loc = (highByte << 8) | lowByte;
 
-                val = cpu.Accumulator;
+                val = (cpu.Accumulator & 0xff);
                 val -= cpu.getData(add(loc , cpu.Y));
                 if(!getCarry())
                     val--;
@@ -1679,7 +1696,7 @@ public class InstructionSet {
         boolean[] flags = {false , true , true , true};
         switch(A){
             case Absolute:
-                val = cpu.Accumulator;
+                val = (cpu.Accumulator&0xff);
                 val -= cpu.getData(op);
                 if(!getCarry())
                     val--;
@@ -1690,7 +1707,7 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteX:
-                val = cpu.Accumulator;
+                val = (cpu.Accumulator&0xff);
                 val -= cpu.getData(addShort(op, cpu.X));
                 if(!getCarry())
                     val--;
@@ -1701,7 +1718,7 @@ public class InstructionSet {
                 return 4;
 
             case AbsoluteY:
-                val = cpu.Accumulator & 0xff;
+                val = (cpu.Accumulator & 0xff);
                 val -= cpu.getData(addShort(op, cpu.Y));
                 if(!getCarry())
                     val--;
@@ -1994,8 +2011,7 @@ public class InstructionSet {
         return((a>>1)%2==1);
     }
     public boolean getCarry(){
-        int a = Byte.toUnsignedInt(cpu.Status);
-        return(a%2==1);
+        return (cpu.Status&0x01)==1;
     }
 
     public void checkAndSet(int a , int b , int c){

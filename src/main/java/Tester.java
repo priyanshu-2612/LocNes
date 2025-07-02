@@ -19,12 +19,16 @@ public class Tester {
     long SystemCounter = 0;
 
     Tester(){
-        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/nestest.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Balloon_fight.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/vram_access.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice_hockey.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Europe, Hong Kong) (En).nes");
+        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/sprite_hit_tests/sprite_hit_tests_2005.10.05/01.basics.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/test_ppu_read_buffer.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice Climber (Japan) (En)/Ice Climber (Japan) (En).nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Pac-Man (U) [!]/Pac-Man (U) [!].nes");
         cartridge.InitCartridge();
@@ -112,6 +116,11 @@ public class Tester {
         //System.out.println("Now outputting CHRROM");
         for(int j=0 ; j <= 0x1fff ; j++){
             int size = cartridge.vCHRMemory.length;
+            if(size==0){
+                // some mapper 000 games can have CHR ROM size = 0, meaning "use CHR RAM instead"
+                // initialize with 0 since chr rom is absent
+                break;
+            }
             ppu.ppu_memory[j] = cartridge.vCHRMemory[j%size];
             ppu.patterntable[(j&0x1000)>>12][j&0xfff] = cartridge.vCHRMemory[j%size]&0xff; // shift by 12 shifts 3 digits in hex
             //System.out.println("At 0x" + Integer.toHexString(j) + " : " + Integer.toHexString(ppu.patterntable[(j&0x1000)>>12][j&0xfff]));
@@ -126,10 +135,8 @@ public class Tester {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("Q")){
-                    step_draw(step);
-                    if(step<cartridge.vCHRMemory.length/16)
-                        step++;
-                    else System.exit(0);
+                    display_nametable();
+                    System.exit(99);
                 }
             }
         });
@@ -195,17 +202,17 @@ public class Tester {
             }
         });
 
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            int step=0;
-            @Override
-            public void handle(KeyEvent event) {
-                if(event.getCode().toString().equals("S")){
-                    draw_nametable();
-                      display_nametable();
-//                    show_me();
-                }
-            }
-        });
+//        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+//            int step=0;
+//            @Override
+//            public void handle(KeyEvent event) {
+//                if(event.getCode().toString().equals("S")){
+//                    draw_nametable();
+//                      display_nametable();
+////                    show_me();
+//                }
+//            }
+//        });
 
         /*int[][] sprite = new int[8][8];
         for(int i=0 ; i< cartridge.vCHRMemory.length/16 ; i++){
@@ -283,13 +290,13 @@ public class Tester {
         int c=0;
         for(int i=0 ; i< 0x400*4 ; i++) {
             if(i%0x400 == 0){
-                //System.out.println("\nNametable " + (i/0x400));
+                System.out.println("\nNametable " + (i/0x400));
             }
             String s = Integer.toHexString(ppu.ppuRead( ((0x2000 + i)) )&0xff);
-            //System.out.print("0x" + Integer.toHexString(0x2000 + i) + " : " + s+ " ");
+            System.out.print("0x" + Integer.toHexString(0x2000 + i) + " : " + s+ " ");
             c++;
             if(c==7){
-                //System.out.println();
+                //System.out.println();/
                 c=0;
             }
         }
