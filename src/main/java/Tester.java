@@ -28,6 +28,7 @@ public class Tester {
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Europe, Hong Kong) (En).nes");
         cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/sprite_hit_tests/sprite_hit_tests_2005.10.05/01.basics.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/official_only.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/test_ppu_read_buffer.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice Climber (Japan) (En)/Ice Climber (Japan) (En).nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Pac-Man (U) [!]/Pac-Man (U) [!].nes");
@@ -54,8 +55,7 @@ public class Tester {
                     }
                     else{
                         ppu.writeToOAM(cpu.dma_address, (byte) cpu.dma_data);
-                        cpu.dma_address++;
-                        cpu.dma_address &= 0xFF;
+                        cpu.dma_address = (cpu.dma_address + 1) & 0xFF;
 
                         if(cpu.dma_address == 0x00){
                             //dma transfer done
@@ -79,7 +79,7 @@ public class Tester {
                 }
             }
             SystemCounter++;
-            SystemCounter &= 0xFFFF;
+            SystemCounter &= 0xFFFFFFFFl;
             return  cpu_cycles;
     }
     public void display_pattern_table(){

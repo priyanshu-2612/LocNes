@@ -1,5 +1,7 @@
 package main.java;
 import javafx.scene.transform.Affine;
+
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.Arrays;
@@ -11,7 +13,7 @@ public class PPU {
     int Controller_Address = 0x2000;
     int PPU_Read_Buffer=0;
     int read_location=0;
-    boolean horizontal_mirroring = true;
+    boolean horizontal_mirroring;
     int Mask = 0x2001;
     int Status = 0x2002;
     int OAM_Address = 0x2003;
@@ -193,7 +195,7 @@ public class PPU {
                         //8x16 sprite
                         if((spriteScanline[i].attribute & 0x80) !=0) {
                             //flipped vertically
-                            if(scanline - spriteScanline[i].y < 8){
+                            if(scanline - (spriteScanline[i].y & 0xff) < 8){
                                 //top half
                                 sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
                                         | (((spriteScanline[i].id & 0xfe) + 1) << 4)
@@ -203,11 +205,11 @@ public class PPU {
                                 //bottom half
                                 sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
                                         | ((spriteScanline[i].id & 0xfe) << 4)
-                                        | ((scanline - spriteScanline[i].y) & 0x07);
+                                        | ((scanline - (spriteScanline[i].y & 0xff)) & 0x07);
                             }
                         }
                         else{
-                            if(scanline - spriteScanline[i].y < 8){
+                            if(scanline - (spriteScanline[i].y & 0xff) < 8){
                                 //top half
                                 sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
                                                                 | ((spriteScanline[i].id & 0xfe) << 4)
@@ -290,7 +292,7 @@ public class PPU {
             // depending upon fine x scrolling. This has the effect of
             // offsetting ALL background rendering by a set number
             // of pixels, permitting smooth scrolling
-            int fine_x = X;
+            int fine_x = X & 0xffff;
             //System.out.println("V : " + Integer.toBinaryString(V));
             int bit_mux =  ((0x8000 >> fine_x) & 0xffff); // 16 bits
 
@@ -319,7 +321,7 @@ public class PPU {
             spriteZeroBeingRendered = false;
 
             for(int i=0; i<8 ; i++){
-                if(spriteScanline[i].x == 0){
+                if((spriteScanline[i].x & 0xff) == 0){
                     int fg_pixel_lo = (sprite_shifter_pattern_lo[i] & 0x80) != 0 ? 1 : 0;
                     int fg_pixel_hi = (sprite_shifter_pattern_hi[i] & 0x80) != 0 ? 1 : 0;
                     fg_pixel = (byte) ((fg_pixel_hi << 1) | fg_pixel_lo);
@@ -383,7 +385,7 @@ public class PPU {
 
             if(spriteZeroHitPossible && spriteZeroBeingRendered){
                 if(backgRenderingEnabled() && spriteRenderingEnabled()){
-                    if(((ppu_registers[Mask-0x2000]&0x02) == 0) && ((ppu_registers[Mask-0x2000]&0x04) == 0)){
+                    if(!(((ppu_registers[Mask-0x2000]&0x02) != 0) || ((ppu_registers[Mask-0x2000]&0x04) != 0))){
 
                         if(cycle >= 9 && cycle < 258){
                             setSpriteZeroHit();
@@ -611,6 +613,7 @@ public class PPU {
             addr_value &= 0x0fff;
             if (!horizontal_mirroring)
             {
+//                System.out.println("Vertical");
                 // Vertical
                 if (addr_value >= 0x0000 && addr_value <= 0x03FF)
                     nametable[0][addr_value & 0x03FF] = data;
@@ -623,6 +626,7 @@ public class PPU {
             }
             else
             {
+//                System.out.println("Horizontal");
                 // Horizontal
                 if (addr_value >= 0x0000 && addr_value <= 0x03FF)
                     nametable[0][addr_value & 0x03FF] = data;
@@ -675,33 +679,6 @@ public class PPU {
         }
 
         return 0;
-    }
-
-    private byte readOAM() {
-        //reads OAM byte by byte
-        OAM_addr &= 0xff;
-        int index = OAM_addr/4;
-        int member = OAM_addr%4;
-
-        Sprite sprite = OAM[index];
-        int data = 0;
-        switch(member){
-            case 0:
-                data =  sprite.y;
-                break;
-            case 1:
-                data =  sprite.id;
-                break;
-            case 2:
-                data =  sprite.attribute;
-                break;
-            case 3:
-                data =  sprite.x;
-                break;
-        }
-//        byteOffset++;
-//        byteOffset %= 256;
-        return (byte) (data & 0xff);
     }
 
     public void cpuWrite(int addr , byte data){
@@ -766,16 +743,47 @@ public class PPU {
                 write_to_Data(data);
                 if((ppu_registers[Controller_Address-0x2000] & 0x04) != 0){
                           V += 32;
+                          V &= 0xffff;
                 }
                 else {
                     V += 1;
+                    V &= 0xffff;
                 }
                 break;
         }
     }
 
+    private byte readOAM() {
+        //reads OAM byte by byte
+        OAM_addr &= 0xff;
+        System.out.println("OAM i s " + Integer.toHexString(OAM_addr));
+        int index = OAM_addr/4;
+        int member = OAM_addr%4;
+
+        Sprite sprite = OAM[index];
+        int data = 0;
+        switch(member){
+            case 0:
+                data =  sprite.y;
+                break;
+            case 1:
+                data =  sprite.id;
+                break;
+            case 2:
+                data =  sprite.attribute;
+                break;
+            case 3:
+                data =  sprite.x;
+                break;
+        }
+//        byteOffset++;
+//        byteOffset %= 256;
+        return (byte) (data & 0xff);
+    }
+
     private void writeToOAM(byte data) {
         //writes to the OAM memory at the OAM_addr
+//        System.out.println("Writing OAM_addr is " + Integer.toHexString(OAM_addr));
         OAM_addr &= 0xff;
         int index = OAM_addr/4;
         int member = OAM_addr%4;
@@ -824,7 +832,8 @@ public class PPU {
 
     public int read_Status(){
         int data = ppu_registers[Status-0x2000] & 0xE0;
-        ppu_registers[Status-0x2000] = (byte) (ppu_registers[Status-0x2000] & 0x7f); //clear the V-Blank bit
+//        ppu_registers[Status-0x2000] = (byte) (ppu_registers[Status-0x2000] & 0x7f); //clear the V-Blank bit
+        clearVBlank();
         address_latch = 0;
         return data;
     }
@@ -861,9 +870,11 @@ public class PPU {
         if (V >= 0x3F00) return_value = PPU_Read_Buffer;
         if((ppu_registers[Controller_Address-0x2000] & 0x04) != 0){
             V += 32;
+            V &= 0xffff;
         }
         else{
             V += 1;
+            V &= 0xffff;
         }
         return return_value;
     }

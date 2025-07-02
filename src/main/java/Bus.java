@@ -15,6 +15,7 @@ public class Bus {
     public void insertCartridge(Cartridge cartridge){
         this.cartridge = cartridge;
         ppu.cartridge = cartridge;
+        ppu.horizontal_mirroring = !cartridge.verticalMirroring;
     }
 
 }

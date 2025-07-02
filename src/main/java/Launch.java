@@ -33,8 +33,8 @@ public class Launch extends Application {
 
         stage.setScene(scene);
         stage.setTitle("NES Emulator");
-        stage.setWidth(760);
-        stage.setHeight(552);
+        stage.setWidth(512);//760
+        stage.setHeight(480);//552
         stage.setResizable(true);
 
 
@@ -129,6 +129,7 @@ public class Launch extends Application {
                 }
 
                 long start = System.nanoTime();
+//                long start = now;
 
                 try {
                     double cycles = 0;

@@ -1770,9 +1770,6 @@ public class InstructionSet {
 
             case PreIndirectX:
                 int addr = add(op , cpu.X) & 0xff;
-//                int loc_high = ((cpu.cpu_memory[(addr+1)&0xff]<<8)&0xff00);
-//                int loc_low = (cpu.cpu_memory[addr] & 0xff);
-
                 int loc_high = ((cpu.getData((addr+1)&0xff)<<8)&0xff00);
                 int loc_low = (cpu.getData(addr) & 0xff);
 
@@ -1783,9 +1780,6 @@ public class InstructionSet {
                 return 6;
 
             case PostIndirectY:
-//                int low  = cpu.cpu_memory[op & 0xFF] & 0xFF;
-//                int high = cpu.cpu_memory[(op + 1) & 0xFF] & 0xFF;
-
                 int low  = cpu.getData(op & 0xFF) & 0xFF;
                 int high = cpu.getData((op + 1) & 0xFF) & 0xFF;
 

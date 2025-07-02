@@ -12,6 +12,7 @@ public class Cartridge {
     byte[] PRGMemory , CHRMemory;
     String filePath;
     byte[] vPRGMemory , vCHRMemory;
+    boolean verticalMirroring;
     int MapperID=0 , PRGBanks=0 , CHRBanks=0;
     int header_len = 16; //16bytes
     int prg_rom_chunks = 4 , chr_rom_chunks = 5 , mapper1 = 6 , mapper2 = 7;
@@ -37,6 +38,8 @@ public class Cartridge {
         }
 
         System.out.println("Read " + offset + " bytes of data");
+
+        verticalMirroring = (header[6] & 0x01) != 0;
 
         if((header[mapper1] & 0x04) > 0) {
 
