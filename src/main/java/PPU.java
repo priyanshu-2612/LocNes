@@ -46,6 +46,8 @@ public class PPU {
     int spriteCount = 0;
     int[] sprite_shifter_pattern_lo = new int[8];
     int[] sprite_shifter_pattern_hi = new int[8];
+    boolean spriteZeroHitPossible = false;
+    boolean spriteZeroBeingRendered = false;
 
     {
         for (int i = 0; i < OAM.length; i++) {
@@ -166,11 +168,17 @@ public class PPU {
 
                     spriteCount = 0;
                     int OAMEntry = 0;
+                    spriteZeroHitPossible = false;
 
                     while(OAMEntry < 64 && spriteCount < 9){
                         int diff = scanline - (OAM[OAMEntry].y & 0xff);
                         if(diff >=0 && diff < (((ppu_registers[Controller_Address - 0x2000]&0xff)&0x20) != 0 ? 16 : 8 )){
                             if(spriteCount < 8){
+
+                                if(OAMEntry == 0){
+                                    //if this is sprite 0 it may trigger a sprite zero hit when drawn
+                                    spriteZeroHitPossible = true;
+                                }
                                 spriteScanline[spriteCount] = OAM[OAMEntry].getCopy();
                                 spriteCount++;
                             }
@@ -192,7 +200,7 @@ public class PPU {
 //                }
 
                 for(int i=0; i<spriteCount ; i++){
-                    int sprite_pattern_bits_lo=0, sprite_pattern_bits_hi; // 1 byte
+                    int sprite_pattern_bits_lo, sprite_pattern_bits_hi; // 1 byte
                     int sprite_pattern_address_lo, sprite_pattern_address_hi; // 2 byte
 
                     if(((ppu_registers[Controller_Address - 0x2000]&0xff)&0x20) != 0){
@@ -273,11 +281,8 @@ public class PPU {
             if (scanline == 241 && cycle == 1)
             {
                 setVBlank();
-                //System.out.println("VBlank is now set");
 
-                //System.out.println("Controller is " + Byte.toUnsignedInt(ppu_registers[Controller_Address-0x2000]));
                 if (getNMIenable()==1) {
-                    //System.out.println("NMI is now set");
                     nmi = true;
                 }
             }
@@ -325,6 +330,8 @@ public class PPU {
 
         if(spriteRenderingEnabled()){
 
+            spriteZeroBeingRendered = false;
+
             for(int i=0; i<8 ; i++){
                 if(spriteScanline[i].x == 0){
                     int fg_pixel_lo = (sprite_shifter_pattern_lo[i] & 0x80) != 0 ? 1 : 0;
@@ -336,6 +343,9 @@ public class PPU {
 
                     if (fg_pixel != 0)
                     {
+                        if(i==0){ // is this sprite 0?
+                            spriteZeroBeingRendered = true;
+                        }
                         break;
                     }
                 }
@@ -384,6 +394,22 @@ public class PPU {
                 pixel_final = bg_pixel;
                 palette_final = bg_palette;
             }
+
+            if(spriteZeroHitPossible && spriteZeroBeingRendered){
+                if(backgRenderingEnabled() && spriteRenderingEnabled()){
+                    if(((ppu_registers[Mask-0x2000]&0x02) == 0) && ((ppu_registers[Mask-0x2000]&0x04) == 0)){
+
+                        if(cycle >= 9 && cycle < 258){
+                            setSpriteZeroHit();
+                        }
+                    }
+                    else{
+                        if(cycle >= 1 && cycle < 258){
+                            setSpriteZeroHit();
+                        }
+                    }
+                }
+            }
         }
         //sprScreen->SetPixel(cycle - 1, scanline, GetColourFromPaletteRam(bg_palette, bg_pixel));
         display.setPixel(cycle-1 , scanline, getColor(palette_final, pixel_final));
@@ -402,12 +428,18 @@ public class PPU {
         }
     }
 
+    private void setSpriteZeroHit() {
+        ppu_registers[Status-0x2000] |= 0x40;
+    }
+
     private void clearSpriteZeroHit() {
         ppu_registers[Status-0x2000] &= ~ 0x40;
+        ppu_registers[Status-0x2000] &= 0xff;
     }
 
     private void clearSpriteOverflow() {
         ppu_registers[Status-0x2000] &= ~0x20;
+        ppu_registers[Status-0x2000] &= 0xff;
     }
 
     public int flipBits(int b){
