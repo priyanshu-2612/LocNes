@@ -24,9 +24,9 @@ public class Tester {
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Balloon_fight.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/vram_access.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice_hockey.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
+        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Europe, Hong Kong) (En).nes");
-        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/sprite_hit_tests/sprite_hit_tests_2005.10.05/01.basics.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/official_only.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/test_ppu_read_buffer.nes");

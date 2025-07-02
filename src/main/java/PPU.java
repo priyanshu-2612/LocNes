@@ -58,7 +58,6 @@ public class PPU {
     public void cycle(){
 
         int nametableByte = 0;
-        int palette=0;
 
         if(scanline >= -1 && scanline < 240){
 
@@ -199,13 +198,13 @@ public class PPU {
                                 //top half
                                 sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
                                         | (((spriteScanline[i].id & 0xfe) + 1) << 4)
-                                        | ((scanline - (spriteScanline[i].y & 0xff)) & 0x07);
+                                        | (7 - ((scanline - (spriteScanline[i].y & 0xff)) & 0x07));
                             }
                             else{
                                 //bottom half
                                 sprite_pattern_address_lo = ((spriteScanline[i].id & 0x01) << 12)
                                         | ((spriteScanline[i].id & 0xfe) << 4)
-                                        | ((scanline - (spriteScanline[i].y & 0xff)) & 0x07);
+                                        | (7 - ((scanline - (spriteScanline[i].y & 0xff)) & 0x07));
                             }
                         }
                         else{
@@ -227,12 +226,14 @@ public class PPU {
                         //8x8 sprites
                         if((spriteScanline[i].attribute & 0x80) !=0){
                             //flipped vertically
-                            sprite_pattern_address_lo = ((ppu_registers[Controller_Address - 0x2000] & 0x8) << 12)
+                            int spritePatternTableBit = (ppu_registers[Controller_Address - 0x2000] & 0x8) != 0 ? 1 : 0;
+                            sprite_pattern_address_lo = (spritePatternTableBit << 12)
                                     | ((spriteScanline[i].id & 0xff) << 4)
                                     | (7 - (scanline - (spriteScanline[i].y & 0xff)));
                         }
                         else{
-                            sprite_pattern_address_lo = ((ppu_registers[Controller_Address - 0x2000] & 0x8) << 12)
+                            int spritePatternTableBit = (ppu_registers[Controller_Address - 0x2000] & 0x8) != 0 ? 1 : 0;
+                            sprite_pattern_address_lo = (spritePatternTableBit << 12)
                                                             | ((spriteScanline[i].id & 0xff) << 4)
                                                                 | (scanline - (spriteScanline[i].y & 0xff));
                         }
@@ -320,7 +321,8 @@ public class PPU {
 
             spriteZeroBeingRendered = false;
 
-            for(int i=0; i<8 ; i++){
+            for(int i=0; i<spriteCount ; i++){
+
                 if((spriteScanline[i].x & 0xff) == 0){
                     int fg_pixel_lo = (sprite_shifter_pattern_lo[i] & 0x80) != 0 ? 1 : 0;
                     int fg_pixel_hi = (sprite_shifter_pattern_hi[i] & 0x80) != 0 ? 1 : 0;
@@ -329,7 +331,7 @@ public class PPU {
                     fg_palette = (byte) ((spriteScanline[i].attribute & 0x03) + 0x04);
                     fg_priority = (spriteScanline[i].attribute & 0x20) != 0 ? 0 : 1;
 
-                    if (fg_pixel != 0)
+                    if ((fg_pixel & 0xff) != 0)
                     {
                         if(i==0){ // is this sprite 0?
                             spriteZeroBeingRendered = true;
@@ -388,17 +390,22 @@ public class PPU {
                     if(!(((ppu_registers[Mask-0x2000]&0x02) != 0) || ((ppu_registers[Mask-0x2000]&0x04) != 0))){
 
                         if(cycle >= 9 && cycle < 258){
-                            setSpriteZeroHit();
+                            if(!getSpriteZeroHit()){
+                                setSpriteZeroHit();
+                            }
                         }
                     }
                     else{
                         if(cycle >= 1 && cycle < 258){
-                            setSpriteZeroHit();
+                            if(!getSpriteZeroHit()){
+                                setSpriteZeroHit();
+                            }
                         }
                     }
                 }
             }
         }
+
         //sprScreen->SetPixel(cycle - 1, scanline, GetColourFromPaletteRam(bg_palette, bg_pixel));
         display.setPixel(cycle-1 , scanline, getColor(palette_final, pixel_final));
 
@@ -416,18 +423,20 @@ public class PPU {
         }
     }
 
+    private boolean getSpriteZeroHit() {
+        return (ppu_registers[Status-0x2000] & 0x40) != 0;
+    }
+
     private void setSpriteZeroHit() {
         ppu_registers[Status-0x2000] |= 0x40;
     }
 
     private void clearSpriteZeroHit() {
         ppu_registers[Status-0x2000] &= 0xBF; //(~0x40)
-        ppu_registers[Status-0x2000] &= 0xff;
     }
 
     private void clearSpriteOverflow() {
         ppu_registers[Status-0x2000] &= 0xDF; //(~0x20)
-        ppu_registers[Status-0x2000] &= 0xff;
     }
 
     public int flipBits(int b){
@@ -475,7 +484,7 @@ public class PPU {
             bg_shifter_attrib_hi <<= 1;
             bg_shifter_attrib_hi &= 0xffff;
 
-            if((ppu_registers[Mask-0x2000] & 0x10) !=0 && cycle >= 1 && cycle < 258){
+            if(spriteRenderingEnabled() && cycle >= 1 && cycle < 258){
 
                 for(int i=0; i<spriteCount ; i++){
                     if( (spriteScanline[i].x & 0xff) > 0){
@@ -560,10 +569,11 @@ public class PPU {
 
     public int ppuRead(int addr){
         int addr_value = addr;
-        addr_value  &= 0xffff;
+        addr_value  &= 0x3fff;
         if(addr_value <= 0x1fff){
             int pt_num = (addr & 0x1000) >> 12;
-            int pt_offset = addr_value & 0x0fff; return patterntable[pt_num][addr_value & 0x0fff]&0xff;
+            int pt_offset = addr_value & 0x0fff;
+            return patterntable[pt_num][addr_value & 0x0fff]&0xff;
         }
         else if(addr_value <= 0x2fff){
             addr_value  &= 0x0fff;
@@ -588,7 +598,7 @@ public class PPU {
                     return nametable[0][addr_value  & 0x03FF];
                 if (addr_value  >= 0x0800 && addr_value  <= 0x0BFF)
                     return nametable[1][addr_value  & 0x03FF];
-                if (addr_value  >= 0x0C00 && addr <= 0x0FFF)
+                if (addr_value  >= 0x0C00 && addr_value <= 0x0FFF)
                     return  nametable[1][addr_value  & 0x03FF];
             }
         }
@@ -607,7 +617,7 @@ public class PPU {
         int addr_value = Short.toUnsignedInt(addr);
         addr_value &= 0x3fff;
         if(addr_value <= 0x1fff){
-            patterntable[addr_value & 0x1000 >> 12][addr_value & 0x0fff] = data;
+            patterntable[(addr_value & 0x1000) >> 12][addr_value & 0x0fff] = data;
         }
         else if(addr_value <= 0x2fff){
             addr_value &= 0x0fff;
