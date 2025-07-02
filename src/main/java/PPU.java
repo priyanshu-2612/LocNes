@@ -52,6 +52,8 @@ public class PPU {
     {
         for (int i = 0; i < OAM.length; i++) {
             OAM[i] = new Sprite();
+            OAM[i].y = 0xff;
+            OAM[i].x = 0x33;
         }
     }
 
@@ -75,6 +77,7 @@ public class PPU {
                 for(int i=0; i<8 ; i++){
                     sprite_shifter_pattern_lo[i] = 0;
                     sprite_shifter_pattern_hi[i] = 0;
+
                 }
             }
 
@@ -136,6 +139,13 @@ public class PPU {
                 bg_next_tile_id = ppuRead((0x2000 | (V & 0x0FFF)));
             }
 
+
+            if (scanline == -1 && cycle >= 280 && cycle < 305)
+            {
+                // End of vertical blank period so reset the Y address ready for rendering
+                transfer_addressy();
+            }
+
 //            Foreground Rendering ------YEEEEEEEEEESSSSS!!!!!!!!!!--------------
             if(scanline >=0 && cycle == 257){
                 // Firstly, clear out the sprite memory. This memory is used to store the
@@ -145,7 +155,7 @@ public class PPU {
                     spriteScanline[i].y = 0xFF;
                     spriteScanline[i].id = 0xFF;
                     spriteScanline[i].attribute = 0xFF;
-                    spriteScanline[i].x = 0xFF;
+                    spriteScanline[i].x = 0x33;
                 }
                 for (int i = 0; i < 8; i++)
                 {
@@ -159,6 +169,11 @@ public class PPU {
 
                     while(OAMEntry < 64 && spriteCount < 9){
                         int diff = scanline - (OAM[OAMEntry].y & 0xff);
+                        int y = OAM[OAMEntry].y & 0xff;
+                        if(y >= 240 || y > scanline){
+                            OAMEntry++;
+                            continue;
+                        }
                         if(diff >=0 && diff < (((ppu_registers[Controller_Address - 0x2000]&0xff)&0x20) != 0 ? 16 : 8 )){
                             if(spriteCount < 8){
 
@@ -252,11 +267,6 @@ public class PPU {
                 }
             }
 
-            if (scanline == -1 && cycle >= 280 && cycle < 305)
-            {
-                // End of vertical blank period so reset the Y address ready for rendering
-                transfer_addressy();
-            }
 
         }
 
@@ -320,7 +330,6 @@ public class PPU {
         if(spriteRenderingEnabled()){
 
             spriteZeroBeingRendered = false;
-
             for(int i=0; i<spriteCount ; i++){
 
                 if((spriteScanline[i].x & 0xff) == 0){
@@ -341,6 +350,7 @@ public class PPU {
                 }
             }
         }
+
         // Now we have a final pixel colour, and a palette for this cycle
         // of the current scanline. Lets at long last, draw that ^&%*er :P
 
@@ -385,20 +395,34 @@ public class PPU {
                 palette_final = bg_palette;
             }
 
+            int x = cycle - 1;
+            int ppu_mask = ppu_registers[Mask - 0x2000] & 0xFF;
+
+            boolean showLeftBG     = (ppu_mask & 0x02) != 0;
+            boolean showLeftSprite = (ppu_mask & 0x04) != 0;
+
+            if (x < 8) {
+                if (!showLeftBG)     bg_pixel = 0;
+                if (!showLeftSprite) fg_pixel = 0;
+            }
+
+
             if(spriteZeroHitPossible && spriteZeroBeingRendered){
                 if(backgRenderingEnabled() && spriteRenderingEnabled()){
                     if(!(((ppu_registers[Mask-0x2000]&0x02) != 0) || ((ppu_registers[Mask-0x2000]&0x04) != 0))){
 
-                        if(cycle >= 9 && cycle < 258){
-                            if(!getSpriteZeroHit()){
+                        if(cycle >= 9 && cycle < 256){
+                            if(!getSpriteZeroHit() && bg_pixel != 0 && fg_pixel != 0){
                                 setSpriteZeroHit();
+
                             }
                         }
                     }
                     else{
-                        if(cycle >= 1 && cycle < 258){
-                            if(!getSpriteZeroHit()){
+                        if(cycle >= 1 && cycle < 256){
+                            if(!getSpriteZeroHit() && bg_pixel != 0 && fg_pixel != 0){
                                 setSpriteZeroHit();
+
                             }
                         }
                     }
@@ -571,7 +595,8 @@ public class PPU {
         int addr_value = addr;
         addr_value  &= 0x3fff;
         if(addr_value <= 0x1fff){
-            int pt_num = (addr & 0x1000) >> 12;
+//            int pt_num = (addr & 0x1000) >> 12;
+            int pt_num = (addr >> 12) & 0x1;
             int pt_offset = addr_value & 0x0fff;
             return patterntable[pt_num][addr_value & 0x0fff]&0xff;
         }
@@ -617,7 +642,7 @@ public class PPU {
         int addr_value = Short.toUnsignedInt(addr);
         addr_value &= 0x3fff;
         if(addr_value <= 0x1fff){
-            patterntable[(addr_value & 0x1000) >> 12][addr_value & 0x0fff] = data;
+            patterntable[(addr_value >> 12) & 0x1][addr_value & 0x0fff] = data;
         }
         else if(addr_value <= 0x2fff){
             addr_value &= 0x0fff;

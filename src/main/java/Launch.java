@@ -34,7 +34,7 @@ public class Launch extends Application {
         stage.setScene(scene);
         stage.setTitle("NES Emulator");
         stage.setWidth(512);//760
-        stage.setHeight(480);//552
+        stage.setHeight(500);//552
         stage.setResizable(true);
 
 
