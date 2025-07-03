@@ -10,6 +10,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.input.*;
 import javafx.event.EventHandler;
@@ -29,6 +30,7 @@ public class Launch extends Application {
 
         AnchorPane root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         Scene scene = new Scene(root);
+        scene.setFill(Color.PEACHPUFF);
 
 
         stage.setScene(scene);
@@ -45,10 +47,11 @@ public class Launch extends Application {
 
         Tester t = new Tester();
         t.display = display;
+        t.display.ppu = t.ppu;
         t.scene = scene;              //for running roms
 
         t.runCode();
-        t.display_pattern_table();
+//        t.display_pattern_table();
 
         scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
             @Override
@@ -143,7 +146,9 @@ public class Launch extends Application {
                     this.stop();
                     return;
                 }
+//                t.display_pattern_table();
                 long elapsed = System.nanoTime() - start;
+//                long elapsed = now - start;
 //                System.out.println("Elapsed: " + (elapsed / 1_000_000.0) + " ms"); //for checking fps
 
                 long sleepTimeNs = (long)(FRAME_DURATION_NS - elapsed);
@@ -161,7 +166,7 @@ public class Launch extends Application {
         };
         gameLoop.start();
 
-        //Timeline is slow and not suitable fo NES
+        //Timeline is slow and not suitable for NES
 
 //        gameLoop.setCycleCount(Timeline.INDEFINITE);
 //

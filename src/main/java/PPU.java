@@ -97,7 +97,7 @@ public class PPU {
                         int blockx = ((coarse_x >> 2)& 0x7) , blocky = ((coarse_y >> 2)& 0x7);  //each is of 3 bits
                         int attributeOffset = ((blocky << 3)&0x38) + blockx;
                         int nt = ((V & 0x0c00) >> 10);
-                        bg_next_tile_attrib = ppuRead(0x23C0 | nt<<10 | attributeOffset);
+                        bg_next_tile_attrib = ppuRead(0x23C0 | (nt<<10) | attributeOffset);
                         if ((coarse_y & 0x02)!=0) bg_next_tile_attrib >>= 4;
                         if ((coarse_x & 0x02)!=0) bg_next_tile_attrib >>= 2;
                         bg_next_tile_attrib &= 0x03;
@@ -174,7 +174,7 @@ public class PPU {
                             OAMEntry++;
                             continue;
                         }
-                        if(diff >=0 && diff < (((ppu_registers[Controller_Address - 0x2000]&0xff)&0x20) != 0 ? 16 : 8 )){
+                        if(diff >= 0 && diff < (((ppu_registers[Controller_Address - 0x2000]&0xff)&0x20) != 0 ? 16 : 8 )){
                             if(spriteCount < 8){
 
                                 if(OAMEntry == 0){
@@ -405,15 +405,16 @@ public class PPU {
             boolean showLeftBG     = (ppu_mask & 0x02) != 0;
             boolean showLeftSprite = (ppu_mask & 0x04) != 0;
 
-            if (x < 8) {
-                if (!showLeftBG)     bg_pixel = 0;
-                if (!showLeftSprite) fg_pixel = 0;
-            }
-
+            int firstVisibleX = (showLeftBG && showLeftSprite) ? 1 : 9;  // cycles
 
             if(spriteZeroHitPossible && spriteZeroBeingRendered){
                 if(backgRenderingEnabled() && spriteRenderingEnabled()){
-                    if(!(((ppu_registers[Mask-0x2000]&0x02) != 0) || ((ppu_registers[Mask-0x2000]&0x04) != 0))){
+                    if (cycle < 9) { // x < 8
+                        if (!showLeftBG)     bg_pixel = 0;
+                        if (!showLeftSprite) fg_pixel = 0;
+                    }
+
+                    if((!((ppu_registers[Mask-0x2000]&0x02) != 0) && !((ppu_registers[Mask-0x2000]&0x04) != 0))){
 
                         if(cycle >= 9 && cycle < 256){
                             if(!getSpriteZeroHit() && bg_pixel != 0 && fg_pixel != 0){
@@ -432,10 +433,15 @@ public class PPU {
                     }
                 }
             }
+
+
+
+
         }
 
         //sprScreen->SetPixel(cycle - 1, scanline, GetColourFromPaletteRam(bg_palette, bg_pixel));
-        display.setPixel(cycle-1 , scanline, getColor(palette_final, pixel_final));
+        if(cycle >= 1 && cycle <= 256)
+            display.setPixel(cycle-1 , scanline, getColor(palette_final, pixel_final));
 
         // Advance renderer - it never stops, it's relentless
 
@@ -484,8 +490,8 @@ public class PPU {
     }
 
     public int getColor(int palette , int color){
-        int offset = palette* 4 + color;
-        return (ppuRead( (0x3f00 + offset)) & 0xff);
+        int offset = ((palette<<2)&0xFF) + color;
+        return (ppuRead(0x3f00 + offset));
     }
 
     public int getVBlank(){
@@ -519,8 +525,9 @@ public class PPU {
             bg_shifter_attrib_lo &= 0xffff;
             bg_shifter_attrib_hi <<= 1;
             bg_shifter_attrib_hi &= 0xffff;
+        }
 
-            if(spriteRenderingEnabled() && cycle >= 1 && cycle < 258){
+            if(spriteRenderingEnabled() && cycle >= 1 && cycle < 257){ //258
 
                 for(int i=0; i<spriteCount ; i++){
                     if( (spriteScanline[i].x & 0xff) > 0){
@@ -533,7 +540,6 @@ public class PPU {
                         sprite_shifter_pattern_hi[i] &= 0xffff;
                     }
                 }
-            }
         }
     }
 
@@ -606,7 +612,8 @@ public class PPU {
 
     public int ppuRead(int addr){
         int addr_value = addr;
-        addr_value  &= 0x3fff;if (addr_value >= 0x3000 && addr_value <= 0x3EFF) {
+        addr_value  &= 0x3fff;
+        if (addr_value >= 0x3000 && addr_value <= 0x3EFF) {
             addr_value -= 0x1000; // Mirror $3000–$3EFF → $2000–$2EFF
         }
         if(addr_value <= 0x1fff){
@@ -855,6 +862,7 @@ public class PPU {
                 sprite.x = data & 0xff;
                 break;
         }
+//        OAM_addr = (OAM_addr + 1) & 0xff;
 //        byteOffset++;
 //        byteOffset %= 256;
     }

@@ -1,5 +1,4 @@
 package main.java;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
@@ -24,14 +23,14 @@ public class Tester {
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Balloon_fight.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/vram_access.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice_hockey.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
+        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Europe, Hong Kong) (En).nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Japan, USA).nes");
-        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/sprite_hit_tests/sprite_hit_tests_2005.10.05/09.timing_basics.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/sprite_hit_tests/sprite_hit_tests_2005.10.05/11.edge_timing.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/official_only.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/full_nes_palette.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/test_ppu_read_buffer.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/Tennis (Japan, USA).nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice Climber (Japan) (En)/Ice Climber (Japan) (En).nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Pac-Man (U) [!]/Pac-Man (U) [!].nes");
         cartridge.InitCartridge();
@@ -139,6 +138,7 @@ public class Tester {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("Q")){
+                    display_palette_ram();
                     display_nametable();
                     System.exit(99);
                 }
@@ -181,6 +181,9 @@ public class Tester {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("L")){
+                    display_pattern_table();
+                    display.palette_num++;
+                    display.palette_num %= 4;
                 }
             }
         });
@@ -281,6 +284,20 @@ public class Tester {
             if(c==7){
                 //System.out.println();/
                 c=0;
+            }
+        }
+    }
+
+    public void display_palette_ram(){
+        int c=0;
+        for(int i=0; i<= 0x1f ; i++){
+            String address = Integer.toHexString(0x3f00 + i);
+            int value = ppu.ppuRead(0x3f00 + i);
+            System.out.println(address + " : " + value);
+            c++;
+            if(c == 7){
+                System.out.println();
+                c = 0;
             }
         }
     }

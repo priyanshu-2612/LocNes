@@ -103,7 +103,10 @@ public class Display {
             for(int j=0 ; j<8 ; j++){
 //                c = getFXColor(greyscale[tile[i][j]]);
 //                int color_id = ppu.getColor(palette,tile[i][j]);
-                c = getFXColor(ppu.palScreen[ (tile[i][j] + seed) + ((tile[i][j]<<4)&0x30)]);
+//                System.out.println(tile[i][j]);
+//                c = getFXColor(ppu.palScreen[ (tile[i][j] + seed) + ((tile[i][j]<<4)&0x30)]);
+                int paletteID = ppu.getColor(palette_num , tile[i][j]);
+                c = (getFXColor(ppu.palScreen[paletteID]));
                     gc_pt.setFill(c);
                     gc_pt.fillRect(x+j*scale,y+i*scale,scale,scale);
             }
