@@ -69,10 +69,10 @@ public class PPU {
                 cycle = 1;
             }
 
-            if(scanline == -1 && cycle == 1){
+            if(scanline == -1&& cycle == 1){
                 clearVBlank();
-                clearSpriteOverflow();
                 clearSpriteZeroHit();
+                clearSpriteOverflow();
 
                 for(int i=0; i<8 ; i++){
                     sprite_shifter_pattern_lo[i] = 0;
@@ -182,13 +182,16 @@ public class PPU {
                                     spriteZeroHitPossible = true;
                                 }
                                 spriteScanline[spriteCount] = OAM[OAMEntry].getCopy();
-                                spriteCount++;
+//                                spriteCount++;
                             }
+                            spriteCount++;
                         }
                         OAMEntry++;
                     }
-                    if(spriteCount > 8)
-                        ppu_registers[Status - 0x2000] |= 0x20; //set sprite overflow
+                if (spriteCount > 8) {
+                    setSpriteOverflow();
+                    spriteCount = 8;
+                }
 
             }
 
@@ -286,6 +289,7 @@ public class PPU {
                 }
             }
         }
+
 
         // Composition - We now have background pixel information for this cycle
         // At this point we are only interested in background
@@ -447,6 +451,14 @@ public class PPU {
         }
     }
 
+    private void setSpriteOverflow() {
+        ppu_registers[Status - 0x2000] |= 0x20;
+    }
+
+    private boolean getOverflowBit() {
+        return (ppu_registers[Status - 0x2000] & 0x20) != 0;
+    }
+
     private boolean getSpriteZeroHit() {
         return (ppu_registers[Status-0x2000] & 0x40) != 0;
     }
@@ -576,8 +588,9 @@ public class PPU {
 
     public void transfer_addressx(){
         if(backgRenderingEnabled() || spriteRenderingEnabled()) {
-            V = (((V & 0xfbff) | (T & 0x400)) & 0xffff) & 0xffff; //ntx
-            V =  (((V & 0xffe0) | (T & 0x1f)) & 0xffff) & 0xffff; // coarsex
+//            V = (((V & 0xfbff) | (T & 0x400)) & 0xffff) & 0xffff; //ntx
+//            V =  (((V & 0xffe0) | (T & 0x1f)) & 0xffff) & 0xffff; // coarsex
+            V = (V & 0x7BE0) | (T & 0x041F);
         }
     }
 
@@ -593,7 +606,9 @@ public class PPU {
 
     public int ppuRead(int addr){
         int addr_value = addr;
-        addr_value  &= 0x3fff;
+        addr_value  &= 0x3fff;if (addr_value >= 0x3000 && addr_value <= 0x3EFF) {
+            addr_value -= 0x1000; // Mirror $3000–$3EFF → $2000–$2EFF
+        }
         if(addr_value <= 0x1fff){
 //            int pt_num = (addr & 0x1000) >> 12;
             int pt_num = (addr >> 12) & 0x1;
@@ -606,25 +621,25 @@ public class PPU {
             {
                 // Vertical
                 if (addr_value  >= 0x0000 && addr_value  <= 0x03FF)
-                    return nametable[0][addr_value  & 0x03FF];
+                    return nametable[0][addr_value  & 0x03FF] & 0xff;
                 if (addr_value  >= 0x0400 && addr_value  <= 0x07FF)
-                    return nametable[1][addr_value  & 0x03FF];
+                    return nametable[1][addr_value  & 0x03FF] & 0xff;
                 if (addr_value  >= 0x0800 && addr_value  <= 0x0BFF)
-                    return nametable[0][addr_value  & 0x03FF];
+                    return nametable[0][addr_value  & 0x03FF] & 0xff;
                 if (addr_value >= 0x0C00 && addr_value  <= 0x0FFF)
-                    return nametable[1][addr_value  & 0x03FF];
+                    return nametable[1][addr_value  & 0x03FF] & 0xff;
             }
             else
             {
                 // Horizontal
                 if (addr_value  >= 0x0000 && addr_value  <= 0x03FF)
-                    return nametable[0][addr_value  & 0x03FF];
+                    return nametable[0][addr_value  & 0x03FF] & 0xff;
                 if (addr_value  >= 0x0400 && addr_value  <= 0x07FF)
-                    return nametable[0][addr_value  & 0x03FF];
+                    return nametable[0][addr_value  & 0x03FF] & 0xff;
                 if (addr_value  >= 0x0800 && addr_value  <= 0x0BFF)
-                    return nametable[1][addr_value  & 0x03FF];
+                    return nametable[1][addr_value  & 0x03FF] & 0xff;
                 if (addr_value  >= 0x0C00 && addr_value <= 0x0FFF)
-                    return  nametable[1][addr_value  & 0x03FF];
+                    return  nametable[1][addr_value  & 0x03FF] & 0xff;
             }
         }
         else if(addr_value >= 0x3f00 && addr_value <= 0x3fff){
@@ -633,14 +648,16 @@ public class PPU {
             if (addr_value == 0x0014) addr_value = 0x0004;
             if (addr_value == 0x0018) addr_value = 0x0008;
             if (addr_value == 0x001C) addr_value = 0x000C;
-            return palette[addr_value];
+            return palette[addr_value] & 0x3f;
         }
         return 0;
     }
 
     public void ppuWrite(short addr , byte data){
         int addr_value = Short.toUnsignedInt(addr);
-        addr_value &= 0x3fff;
+        addr_value &= 0x3fff;if (addr_value >= 0x3000 && addr_value <= 0x3EFF) {
+            addr_value -= 0x1000; // Mirror $3000–$3EFF → $2000–$2EFF
+        }
         if(addr_value <= 0x1fff){
             patterntable[(addr_value >> 12) & 0x1][addr_value & 0x0fff] = data;
         }
@@ -679,7 +696,7 @@ public class PPU {
             if (addr_value == 0x0014) addr_value = 0x0004;
             if (addr_value == 0x0018) addr_value = 0x0008;
             if (addr_value == 0x001C) addr_value = 0x000C;
-            palette[addr_value] = data;
+            palette[addr_value] = (byte) (data & 0x3f);
         }
     }
 
@@ -791,7 +808,7 @@ public class PPU {
     private byte readOAM() {
         //reads OAM byte by byte
         OAM_addr &= 0xff;
-        System.out.println("OAM i s " + Integer.toHexString(OAM_addr));
+        System.out.println("OAM is " + Integer.toHexString(OAM_addr));
         int index = OAM_addr/4;
         int member = OAM_addr%4;
 

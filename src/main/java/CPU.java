@@ -77,7 +77,7 @@ public class CPU {
         }
         else if(index <= 0x3fff && index >= 0x2000){
             index = 0x2000 + (index&0x0007);
-            return ppu.cpuRead((short) ((index)&0xffff))&0xff;
+            return ppu.cpuRead(index)&0xff;
         }
         else if(index >= 0x4016 && index <= 0x4017){
             int bit = (shift_register_4021[index&0x0001] & 0x80) != 0 ? 1 : 0;
@@ -95,7 +95,6 @@ public class CPU {
         cpu_memory[address] = val;
         SP--;
         SP = (byte) (SP & 0xFF);
-        //System.out.println("Value Pushed : " + Integer.toHexString(Byte.toUnsignedInt(val)) + " at 0x" + Integer.toHexString(address));
     }
 
     public byte pop(){

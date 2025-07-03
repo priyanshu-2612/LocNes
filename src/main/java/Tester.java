@@ -26,9 +26,11 @@ public class Tester {
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice_hockey.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Europe, Hong Kong) (En).nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Japan, USA).nes");
         cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/sprite_hit_tests/sprite_hit_tests_2005.10.05/09.timing_basics.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/official_only.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/full_nes_palette.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/test_ppu_read_buffer.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice Climber (Japan) (En)/Ice Climber (Japan) (En).nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Pac-Man (U) [!]/Pac-Man (U) [!].nes");
@@ -80,18 +82,20 @@ public class Tester {
             }
             SystemCounter++;
             SystemCounter &= 0xFFFFFFFFl;
-            return  cpu_cycles;
+
+
+        return  cpu_cycles;
     }
     public void display_pattern_table(){
         int[][] sprite = new int[8][8];
         Random random = new Random();
         int seed = random.nextInt(0xb);
         for(int i=0 ; i< cartridge.vCHRMemory.length/16 ; i++){
-        draw(sprite,i*16);
-        int x = i%16, y = i/16;
-        if(y>=16) y += 1;
-        //+ ((i*16)/0x1000)*16 Pt Offset
-        display.draw_chr_rom(sprite,x,y,seed);
+            draw(sprite,i*16);
+            int x = i%16, y = i/16;
+            if(y>=16) y += 1;
+            //+ ((i*16)/0x1000)*16 Pt Offset
+            display.draw_chr_rom(sprite,x,y,seed);
         }
     }
 
@@ -177,27 +181,6 @@ public class Tester {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("L")){
-                    int c=230;
-                    while(c-- > 0) {
-                        int cycles;
-                        cycles = decoder.run_one_cycle();
-                        printFlags();
-                        //System.out.println("The instruction took " + cycles + " to execute");
-//                      cpu.ppu_registers_dump(ppu_Reg_values);
-                        cycles *= 3;
-//                        if(Integer.toHexString(Short.toUnsignedInt(cpu.PC)).equals("cdf2") ){
-//                            draw_nametable();
-//                            display_nametable();
-//                        }
-                        while (cycles-- > 0) {
-                            ppu.cycle();
-                            if (ppu.nmi) {
-                                //System.out.println("NMI routine will follow");
-                                ppu.nmi = false;
-                                decoder.is.nmi();
-                            }
-                        }
-                    }
                 }
             }
         });
@@ -346,8 +329,6 @@ public class Tester {
             int higher = ppu.ppuRead((loc+8+i)) & 0xff;
             String binLow = String.format("%8s", Integer.toBinaryString(lower)).replace(' ', '0');
             String binHigh = String.format("%8s", Integer.toBinaryString(higher)).replace(' ', '0');
-//            //System.out.println("Str High : " + Integer.toHexString(higher));
-//            //System.out.println("Str Low : " + Integer.toHexString(lower));
             for(int j=0 ; j<8 ; j++){
                 tile[i][j] = (((binHigh.charAt(j)- '0')<<1) & 0x2) + binLow.charAt(j)-'0';
             }

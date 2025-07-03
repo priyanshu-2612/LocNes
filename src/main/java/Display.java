@@ -20,6 +20,8 @@ public class Display {
     Canvas patternScreen = new Canvas(256*3,128*3);
     PPU ppu;
     java.awt.Color[] greyscale;
+    int palette_num =0;
+    float SCALE = 1.5F;
 
     Display(){
 //        super(256*12,256*12);
