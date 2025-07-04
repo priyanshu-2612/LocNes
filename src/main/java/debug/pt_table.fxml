@@ -1,11 +1,26 @@
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.canvas.Canvas?>
-<VBox fx:controller="main.java.debug.PatternTableController"
-      xmlns:fx="http://javafx.com/fxml"
-      spacing="20"
-      alignment="TOP_CENTER"
-      style="-fx-background-color: #2e2e2e; -fx-padding: 20;">
+<?xml version="1.0" encoding="UTF-8"?>
 
-   <Canvas fx:id="patternScreen1" width="192" height="192" />
-   <Canvas fx:id="patternScreen2" width="192" height="192" />
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="TOP_LEFT" spacing="10" style="-fx-background-color: #fffaf0; -fx-padding: 8 20 20 20;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.debug.PatternTableController">
+
+   <Label styleClass="pt-label" text="Pattern Table 0:">
+      <font>
+         <Font name="Consolas Bold" size="12.0" />
+      </font>
+   </Label>
+
+   <Canvas fx:id="patternScreen1" height="192" width="192" />
+
+   <Label styleClass="pt-label" text="Pattern Table 1:">
+      <font>
+         <Font name="Consolas Bold" size="12.0" />
+      </font>
+   </Label>
+
+   <Canvas fx:id="patternScreen2" height="192" width="192" />
+
 </VBox>

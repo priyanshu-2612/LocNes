@@ -143,7 +143,6 @@ public class Tester {
             draw(sprite,i*16);
             int x = i%16, y = i/16;
             y %= 16;
-            System.out.println("X : " +  x + " Y : " + y );
             //+ ((i*16)/0x1000)*16 Pt Offset
             GraphicsContext gc_pt = (i < 256) ? gc_pt1 : gc_pt2;
             display.draw_chr_rom(gc_pt, sprite,x,y);
