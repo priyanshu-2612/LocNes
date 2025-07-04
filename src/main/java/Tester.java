@@ -5,8 +5,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 
-import java.util.Random;
-
 
 public class Tester {
     public Display display;
@@ -238,10 +236,8 @@ public class Tester {
             int higher = ppu.ppuRead((loc+8+i)&0xffff) & 0xff;
             String binLow = String.format("%8s", Integer.toBinaryString(lower)).replace(' ', '0');
             String binHigh = String.format("%8s", Integer.toBinaryString(higher)).replace(' ', '0');
-//            //System.out.println("Str High : " + binHigh);
-//            //System.out.println("Str Low : " + binLow);
             for(int j=0 ; j<8 ; j++){
-                sprite[i][j] = (((binHigh.charAt(j)- '0')<<1) & 0x2) + binLow.charAt(j)-'0';
+                sprite[i][j] = (((binHigh.charAt(j)- '0')<<1) & 0x2) + (binLow.charAt(j)-'0');
             }
         }
     }
@@ -267,20 +263,34 @@ public class Tester {
         //}
     }
 
-    public void draw_nametable(){
+    public void draw_nametable(GraphicsContext gc1, GraphicsContext gc2, GraphicsContext gc3, GraphicsContext gc4){
         int[][] sprite = new int[8][8];
         for(int i=0 ; i< 0x400*4 ; i++) {
-            draw(sprite , ppu.ppuRead((short) (0x2000+i)));
-//            display_nametable();
-            if(i<=0x400)
-                display.show(sprite, i , 0 ,0);
-            else if(i<=0x800)
-                display.show(sprite, i , 1 , 0);
-            else if(i<=0x400*3)
-                display.show(sprite, i , 0 , 1);
+            int local = i & 0x3FF;
+            if (local >= 960) continue; //skipping attribute bytes
+            int col =  local % 32;       // 0‑31
+            int row =  local / 32;       // 0-29
+
+//            draw(sprite , ppu.ppuRead(0x2000+i) );
+            int nt_base_addr = (i<0x400 ? 0x2000 : (i<0x800 ? 0x2400 : (i<0xC00? 0x2800 : 0x2C00)));
+            int addr = nt_base_addr + (32 * row) + col;
+            int tilenum = ppu.ppuRead(addr);
+            int bg_pattern_table = (ppu.ppu_registers[0] & 0x10) != 0 ? 1 : 0;
+            System.out.println(bg_pattern_table);
+            int tile_addr = 0x1000 * bg_pattern_table;
+            int taddr = tile_addr + (tilenum << 4);
+
+            System.out.println(Integer.toHexString(taddr));
+            draw(sprite , taddr );
+
+            if(i<0x400)
+                display.drawTile(gc1,sprite, col , row);
+            else if(i<0x800)
+                display.drawTile(gc2, sprite, col , row);
+            else if(i<0xC00)
+                display.drawTile(gc3, sprite, col , row);
             else
-                display.show(sprite, i , 1 , 1);
-//            //System.out.println("Block " + i + " drawn");
+                display.drawTile(gc4, sprite, col , row);
         }
     }
 
@@ -351,7 +361,7 @@ public class Tester {
     }
 
     private void draw_background(int[][] tile, int loc) {
-        loc =  (loc<<4) + 0x1000; //bkg tiles are in pattern table 1
+//        loc =  (loc<<4) + 0x1000; //bkg tiles are in pattern table 1
 //        //System.out.println("Loc is " + Integer.toHexString(loc));
         for(int i=0 ; i<8 ; i++){
             int lower = ppu.ppuRead((loc+i)) & 0xff;

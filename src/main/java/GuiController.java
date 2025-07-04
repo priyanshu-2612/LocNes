@@ -18,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import main.java.debug.NameTableController;
 import main.java.debug.PatternTableController;
 
 import java.io.File;
@@ -106,8 +107,27 @@ public class GuiController implements Initializable {
             ptController.setLauncher(launcher);
             ptController.showPatternTables();
 
-            // Optional: if you need to pass data to ptController
-            // ptController.setPatternData(...);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showNameTables(){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/name_table.fxml"));
+            Parent root = loader.load();
+
+            NameTableController nametController = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("Name Tables");
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.initOwner(menuBar.getScene().getWindow()); // optional
+            stage.show();
+
+            nametController.setLauncher(launcher);
+            nametController.showNameTables();
 
         } catch (IOException e) {
             e.printStackTrace();

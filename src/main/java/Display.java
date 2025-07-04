@@ -61,22 +61,18 @@ public class Display {
         }
     }
 
-    public void show(int[][] sprite, int n , int x , int y){
+    public void drawTile(GraphicsContext gc, int[][] sprite, int col, int row){
         Color c;
+        float scale = 1;
+        double baseX = (col) * 8 * scale;
+        double baseY = (row) * 8 * scale;
         for(int i=0 ; i<8 ; i++){
         for(int j=0 ; j<8 ; j++){
-            if(sprite[i][j]>0) c = Color.BLACK;
-            else c = Color.RED;
-//            c = getFXColor(greyscale[sprite[i][j]]);
-            int scale = 2;
+            c = getFXColor(greyscale[sprite[i][j]]);
             gc.setFill(c);
-//            int row = (int)(n/16);  for chr
-//            int col = n%16;
-            int row = (int)(n/32);
-            int col = n%32;
-            gc.fillRect((j + x*32)*scale + (col)*scale*8 , (i + y*30)*scale + (int)(row)*scale*8 , scale, scale);
+            gc.fillRect(baseX + j*scale, baseY + i*scale, scale, scale);
+            }
         }
-    }
     }
 
     public void draw_tile(int[][] tile, int x, int y){
