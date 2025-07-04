@@ -61,14 +61,16 @@ public class Display {
         }
     }
 
-    public void drawTile(GraphicsContext gc, int[][] sprite, int col, int row){
+    public void drawTile(GraphicsContext gc, int[][] sprite, int paletteIndex, int col, int row){
         Color c;
         float scale = 1;
         double baseX = (col) * 8 * scale;
         double baseY = (row) * 8 * scale;
         for(int i=0 ; i<8 ; i++){
         for(int j=0 ; j<8 ; j++){
-            c = getFXColor(greyscale[sprite[i][j]]);
+//            c = getFXColor(greyscale[sprite[i][j]]);
+            int paletteID = ppu.getColor(paletteIndex, sprite[i][j]);
+            c = getFXColor(ppu.palScreen[paletteID]);
             gc.setFill(c);
             gc.fillRect(baseX + j*scale, baseY + i*scale, scale, scale);
             }

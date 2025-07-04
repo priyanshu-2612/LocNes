@@ -276,21 +276,24 @@ public class Tester {
             int addr = nt_base_addr + (32 * row) + col;
             int tilenum = ppu.ppuRead(addr);
             int bg_pattern_table = (ppu.ppu_registers[0] & 0x10) != 0 ? 1 : 0;
-            System.out.println(bg_pattern_table);
             int tile_addr = 0x1000 * bg_pattern_table;
             int taddr = tile_addr + (tilenum << 4);
 
-            System.out.println(Integer.toHexString(taddr));
             draw(sprite , taddr );
 
+            int attrAddr = nt_base_addr + 0x3C0 + (row / 4) * 8 + (col / 4);
+            int attrByte = ppu.ppuRead(attrAddr);
+            int shift = ((row % 4) / 2) * 4 + ((col % 4) / 2) * 2;
+            int paletteIndex = (attrByte >> shift) & 0b11;
+
             if(i<0x400)
-                display.drawTile(gc1,sprite, col , row);
+                display.drawTile(gc1,sprite, paletteIndex, col , row);
             else if(i<0x800)
-                display.drawTile(gc2, sprite, col , row);
+                display.drawTile(gc2, sprite, paletteIndex, col , row);
             else if(i<0xC00)
-                display.drawTile(gc3, sprite, col , row);
+                display.drawTile(gc3, sprite, paletteIndex, col , row);
             else
-                display.drawTile(gc4, sprite, col , row);
+                display.drawTile(gc4, sprite, paletteIndex, col , row);
         }
     }
 
