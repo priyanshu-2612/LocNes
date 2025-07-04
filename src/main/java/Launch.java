@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.MenuBar;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -52,6 +53,7 @@ public class Launch extends Application {
 
 
         stage.setScene(scene);
+        stage.getIcons().add(new Image("file:C:/Users/prash/Downloads/FFRK_Thunder_Dragon_FFIV.png"));
         stage.setTitle("NES Emulator");
         stage.setWidth(524.8);//760 //512
         stage.setHeight(((542.5 + menuBar.getHeight() - 7)));//552 //480
