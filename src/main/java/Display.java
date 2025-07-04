@@ -2,13 +2,11 @@ package main.java;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.image.WritablePixelFormat;
 
-import java.awt.*;
 import java.nio.IntBuffer;
 import java.util.Random;
 
@@ -16,15 +14,17 @@ public class Display {
 
     GraphicsContext gc, gc_pt;
 //    Canvas mainScreen = new Canvas(256*12,256*12);
-    Canvas mainScreen = new Canvas(528,517); //528,517
+//    Canvas mainScreen = new Canvas(528,517); //528,517
+    Canvas mainScreen;
     Canvas patternScreen = new Canvas(256*3,128*3);
     PPU ppu;
     java.awt.Color[] greyscale;
     int palette_num =0;
     float SCALE = 1.5F;
 
-    Display(){
+    Display(GuiController controller){
 //        super(256*12,256*12);
+        mainScreen = controller.getMainScreen();
         gc = mainScreen.getGraphicsContext2D();
         patternScreen.setLayoutX(538);
         patternScreen.setLayoutY(10);

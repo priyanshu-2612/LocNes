@@ -18,12 +18,12 @@ public class Tester {
     long SystemCounter = 0;
 
     Tester(){
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
+        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/nestest.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Balloon_fight.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/vram_access.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice_hockey.nes");
-        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
+//        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Europe, Hong Kong) (En).nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Japan, USA).nes");
 //        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
@@ -181,9 +181,9 @@ public class Tester {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("L")){
-                    display_pattern_table();
-                    display.palette_num++;
-                    display.palette_num %= 4;
+//                    display_pattern_table();
+//                    display.palette_num++;
+//                    display.palette_num %= 4;
                 }
             }
         });

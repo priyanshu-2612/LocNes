@@ -4,23 +4,34 @@ import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.event.EventType;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.input.*;
 import javafx.event.EventHandler;
 import javafx.util.Duration;
 
+import javax.swing.*;
 import java.util.Arrays;
 
 
 public class Launch extends Application {
     private static AnimationTimer gameLoop;
+    private GuiController controller;
+
     public static void main(String[] args){
         launch(args);
     }
@@ -28,22 +39,30 @@ public class Launch extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        AnchorPane root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
+        BorderPane root = loader.load();
+
+        controller = loader.getController();
+
+        MenuBar menuBar = controller.getMenuBar();
+        Canvas mainScreen = controller.getMainScreen();
         Scene scene = new Scene(root);
         scene.setFill(Color.PEACHPUFF);
 
 
         stage.setScene(scene);
         stage.setTitle("NES Emulator");
-        stage.setWidth(760);//760 //512
-        stage.setHeight(552);//552 //480
-        stage.setResizable(true);
+        stage.setWidth(Math.floor(524.8));//760 //512
+        stage.setHeight(((542.5 + menuBar.getHeight())));//552 //480
+        stage.setResizable(false);
 
 
-        Display display = new Display();
-        root.getChildren().add(display.mainScreen);
-        root.getChildren().add(display.patternScreen);
+        Display display = new Display(controller);
+        root.setTop(menuBar);
+//        root.setCenter(mainScreen);
         stage.show();
+
+//        root.getChildren().add(menuBar);
 
         Tester t = new Tester();
         t.display = display;
@@ -115,6 +134,14 @@ public class Launch extends Application {
                         t.cpu.controller.controller_input[0] ^= 0x01;
                         break;
                 }
+            }
+        });
+
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if(event.getCode().toString().equals("L"))
+                    System.out.println("W : " + root.getWidth() + " H : " + root.getHeight());
             }
         });
 
