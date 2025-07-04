@@ -14,7 +14,6 @@ import javafx.event.EventHandler;
 
 
 public class Launch extends Application {
-    private static AnimationTimer gameLoop;
     private GuiController controller;
     private Display display;
     private Scene scene;
@@ -27,68 +26,12 @@ public class Launch extends Application {
 
     public void launchGame(String path){
 
-        if (gameLoop != null) {
-            gameLoop.stop();
-            gameLoop = null;
-        }
-
         Tester t = new Tester(display, scene, cpu, ppu);
         t.setUpCartridge(path);
-//        t.display = display;
-//        t.display.ppu = t.ppu;
-//        t.scene = scene;              //for running roms
-
-        t.runCode();
-
-        gameLoop = new AnimationTimer() {
-            private static double critical = 1790000.0 / 60.0;
-            private static final double FRAME_DURATION_NS = 1_000_000_000.0 / 60.0; // ~16.67ms in nanoseconds
-            private long lastTime = 0;
-
-            @Override
-            public void handle(long now) {
-                if (lastTime == 0) {
-                    lastTime = now;
-                    return;
-                }
-
-                long start = System.nanoTime();
-//                long start = now;
-
-                try {
-                    double cycles = 0;
-                    while (cycles < critical) {
-                        cycles += t.cycle();
-                    }
-                }
-                catch (RuntimeException e) {
-                    System.out.println("GAME OVER");
-                    e.printStackTrace();
-                    this.stop();
-                    return;
-                }
-//                t.display_pattern_table();
-                long elapsed = System.nanoTime() - start;
-//                long elapsed = now - start;
-//                System.out.println("Elapsed: " + (elapsed / 1_000_000.0) + " ms"); //for checking fps
-
-                long sleepTimeNs = (long)(FRAME_DURATION_NS - elapsed);
-
-                if (sleepTimeNs > 0) {
-                    try {
-                        Thread.sleep(sleepTimeNs / 1_000_000, (int)(sleepTimeNs % 1_000_000));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                lastTime = now;
-            }
-        };
-        gameLoop.start();
-
-
+        t.readCartridge();
+        t.runGame();
     }
+
     @Override
     public void start(Stage stage) throws Exception {
 
@@ -108,9 +51,9 @@ public class Launch extends Application {
 
         stage.setScene(scene);
         stage.setTitle("NES Emulator");
-        stage.setWidth(Math.floor(524.8));//760 //512
-        stage.setHeight(((542.5 + menuBar.getHeight())));//552 //480
-        stage.setResizable(false);
+        stage.setWidth(524.8);//760 //512
+        stage.setHeight(((542.5 + menuBar.getHeight() - 7)));//552 //480
+        stage.setResizable(true);
 
 
         ppu = new PPU();

@@ -1,4 +1,5 @@
 package main.java;
+import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
@@ -8,6 +9,7 @@ import java.util.Random;
 
 public class Tester {
     public Display display;
+    private static AnimationTimer gameLoop;
     Decoder decoder;
     CPU cpu;
     PPU ppu;
@@ -32,8 +34,59 @@ public class Tester {
         bus.insertCartridge(cartridge);
     }
 
-    public void loadGameData(){
+    public void runGame(){
 
+        if (gameLoop != null) {
+            gameLoop.stop();
+            gameLoop = null;
+        }
+
+        gameLoop = new AnimationTimer() {
+            private static double critical = 1790000.0 / 60.0;
+            private static final double FRAME_DURATION_NS = 1_000_000_000.0 / 60.0; // ~16.67ms in nanoseconds
+            private long lastTime = 0;
+
+            @Override
+            public void handle(long now) {
+                if (lastTime == 0) {
+                    lastTime = now;
+                    return;
+                }
+
+                long start = System.nanoTime();
+//                long start = now;
+
+                try {
+                    double cycles = 0;
+                    while (cycles < critical) {
+                        cycles += cycle();
+                    }
+                }
+                catch (RuntimeException e) {
+                    System.out.println("GAME OVER");
+                    e.printStackTrace();
+                    this.stop();
+                    return;
+                }
+//                t.display_pattern_table();
+                long elapsed = System.nanoTime() - start;
+//                long elapsed = now - start;
+//                System.out.println("Elapsed: " + (elapsed / 1_000_000.0) + " ms"); //for checking fps
+
+                long sleepTimeNs = (long)(FRAME_DURATION_NS - elapsed);
+
+                if (sleepTimeNs > 0) {
+                    try {
+                        Thread.sleep(sleepTimeNs / 1_000_000, (int)(sleepTimeNs % 1_000_000));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                lastTime = now;
+            }
+        };
+        gameLoop.start();
     }
 
     public int cycle(){
@@ -93,7 +146,7 @@ public class Tester {
         }
     }
 
-    public void runCode(){
+    public void readCartridge(){
         for(int i=0 ; i + 0x8000 <= 0xffff ; i++){  //Load program data
             int size = cartridge.vPRGMemory.length;
             String s = Integer.toHexString(Byte.toUnsignedInt(cartridge.vPRGMemory[i%size]));
