@@ -28,11 +28,12 @@ public class CPU {
     boolean dma_transfer = false;
     boolean dma_dummy = true;
 
-    public CPU(){
+    public CPU(PPU ppu){
         SP = (byte) 0xFD;
         Status = 0x24;
         controller = new Controller();
         shift_register_4021 = new int[2];
+        this.ppu = ppu;
 //        try {
 //            cpu_logger = new FileWriter("C:/Users/prash/Downloads/CPU_logger.txt");
 //        } catch (IOException e) {

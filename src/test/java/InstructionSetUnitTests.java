@@ -19,9 +19,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class InstructionSetUnitTests {
-
-    CPU cpu = new CPU();
     PPU ppu = new PPU();
+    CPU cpu = new CPU(ppu);
     InstructionSet instructionSet = new InstructionSet(cpu,ppu);
     Decoder decoder = new Decoder(instructionSet);
     File jsonFile;

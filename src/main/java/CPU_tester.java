@@ -15,8 +15,9 @@ public class CPU_tester {
 
     public CPU_tester(Scene scene) {
         this.scene = scene;
-        cpu = new CPU();
-        decoder = new Decoder(cpu , new PPU());
+        PPU ppu = new PPU();
+        cpu = new CPU(ppu);
+        decoder = new Decoder(cpu , ppu);
     }
 
     public void test() {

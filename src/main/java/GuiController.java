@@ -1,14 +1,21 @@
 package main.java;
 
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -19,20 +26,8 @@ public class GuiController implements Initializable {
     private MenuBar menuBar;
     @FXML
     public Canvas mainScreen;
-
-    private MenuBar instantiateMenuBar() {
-        Menu fileMenu = new Menu("file");
-        MenuItem open = new MenuItem("Open NES...");
-        fileMenu.getItems().add(open);
-
-        Menu debugMenu = new Menu("Debug");
-        MenuItem patternTableMenuItem = new MenuItem("Show Pattern Table");
-        debugMenu.getItems().add(patternTableMenuItem);
-
-        MenuBar menuBar = new MenuBar();
-        menuBar.getMenus().addAll(fileMenu, debugMenu);
-        return  menuBar;
-    }
+    private Stage stage;
+    private Launch launcher;
 
     public MenuBar getMenuBar() {
         return menuBar;
@@ -52,14 +47,45 @@ public class GuiController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        menuBar = instantiateMenuBar();
-//        mainScreen.setWidth(528);
-//        mainScreen.setHeight(517);
         BorderPane.setAlignment(mainScreen, Pos.TOP_LEFT);
         mainScreen.widthProperty().bind(root.widthProperty());
-
-        // height = full window height minus menu‑bar height
         mainScreen.heightProperty().bind(
                 root.heightProperty().subtract(menuBar.heightProperty()));
+        Platform.runLater(() -> {
+            GraphicsContext gc = mainScreen.getGraphicsContext2D();
+            gc.setFill(Color.web("#2e2e2e")); // dark gray
+            gc.fillRect(0, 0, mainScreen.getWidth(), mainScreen.getHeight());
+        });
+    }
+
+    public void openNesFile(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open NES ROM");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("NES files (*.nes)", "*.nes"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+
+        // Set default directory to Downloads
+        String userHome = System.getProperty("user.home");
+        File downloadsDir = new File(userHome, "Downloads");
+        if (downloadsDir.exists()) {
+            fileChooser.setInitialDirectory(downloadsDir);
+        }
+
+        File selectedFile = fileChooser.showOpenDialog(root.getScene().getWindow());
+
+        if (selectedFile != null) {
+            System.out.println("Selected ROM: " + selectedFile.getAbsolutePath());
+            launcher.launchGame(selectedFile.getAbsolutePath());
+        }
+    }
+
+    public void setLauncher(Launch launch){
+        this.launcher = launch;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 }

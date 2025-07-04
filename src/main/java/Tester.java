@@ -17,28 +17,23 @@ public class Tester {
     Scene scene;
     long SystemCounter = 0;
 
-    Tester(){
-        cartridge = new Cartridge("C:/Users/prash/Downloads/donkey kong.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/nestest.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Balloon_fight.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/vram_access.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice_hockey.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/smb.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Europe, Hong Kong) (En).nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Kung Fu (Japan, USA).nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Super_mario_brothers.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/sprite_hit_tests/sprite_hit_tests_2005.10.05/11.edge_timing.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/official_only.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/full_nes_palette.nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Tennis (Japan, USA).nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Ice Climber (Japan) (En)/Ice Climber (Japan) (En).nes");
-//        cartridge = new Cartridge("C:/Users/prash/Downloads/Pac-Man (U) [!]/Pac-Man (U) [!].nes");
-        cartridge.InitCartridge();
-        cpu = new CPU();
-        ppu = new PPU();
+    public Tester(Display display, Scene scene, CPU cpu, PPU ppu) {
+        this.display = display;
+        this.scene = scene;
+        this.ppu = ppu;
+        this.cpu = cpu;
         bus = new Bus(cpu,ppu);
-        bus.insertCartridge(cartridge);
         decoder = new Decoder(cpu,ppu);
+    }
+
+    public void setUpCartridge(String path){
+        cartridge = new Cartridge(path);
+        cartridge.InitCartridge();
+        bus.insertCartridge(cartridge);
+    }
+
+    public void loadGameData(){
+
     }
 
     public int cycle(){
@@ -99,40 +94,27 @@ public class Tester {
     }
 
     public void runCode(){
-        //System.out.println("The code will now run");
         for(int i=0 ; i + 0x8000 <= 0xffff ; i++){  //Load program data
             int size = cartridge.vPRGMemory.length;
             String s = Integer.toHexString(Byte.toUnsignedInt(cartridge.vPRGMemory[i%size]));
             cpu.cpu_memory[i + 0x8000] = cartridge.vPRGMemory[i%size];
-            //System.out.println("0x"+Integer.toHexString(i+0x8000) + " : 0x" + s);
         }
 
-        //System.out.println("Higher byte is " + Integer.toHexString(cpu.cpu_memory[0xfffd]<<8 & 0xff00));
-        //System.out.println("Lower byte is " + Integer.toHexString(cpu.cpu_memory[0xfffc]&0x00ff));
         int reset_vector = ((cpu.cpu_memory[0xfffd]<<8 & 0xff00 ) + (cpu.cpu_memory[0xfffc]&0x00ff));
         String s = Integer.toHexString(reset_vector);
-        //System.out.println("Setting Program Counter to 0x" + s);
         cpu.PC = (short) reset_vector;  //TODO: Uncomment THIS ONCE DONE USING NESTEST
-//        cpu.PC = (short) 0xc000;
-        //System.out.println("Program Counter is " + Integer.toHexString(Short.toUnsignedInt(cpu.PC)));
 
-        //System.out.println("Now outputting CHRROM");
         for(int j=0 ; j <= 0x1fff ; j++){
             int size = cartridge.vCHRMemory.length;
             if(size==0){
-                // some mapper 000 games can have CHR ROM size = 0, meaning "use CHR RAM instead"
-                // initialize with 0 since chr rom is absent
                 break;
             }
             ppu.ppu_memory[j] = cartridge.vCHRMemory[j%size];
-            ppu.patterntable[(j&0x1000)>>12][j&0xfff] = cartridge.vCHRMemory[j%size]&0xff; // shift by 12 shifts 3 digits in hex
-            //System.out.println("At 0x" + Integer.toHexString(j) + " : " + Integer.toHexString(ppu.patterntable[(j&0x1000)>>12][j&0xfff]));
+            ppu.patterntable[(j&0x1000)>>12][j&0xfff] = cartridge.vCHRMemory[j%size]&0xff;
         }
 
         ppu.display = display;
 
-//        decoder.run_one_cycle();
-//
         scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
             int step=0;
             @Override
@@ -181,34 +163,9 @@ public class Tester {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("L")){
-//                    display_pattern_table();
-//                    display.palette_num++;
-//                    display.palette_num %= 4;
                 }
             }
         });
-
-//        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-//            int step=0;
-//            @Override
-//            public void handle(KeyEvent event) {
-//                if(event.getCode().toString().equals("S")){
-//                    draw_nametable();
-//                      display_nametable();
-////                    show_me();
-//                }
-//            }
-//        });
-
-        /*int[][] sprite = new int[8][8];
-        for(int i=0 ; i< cartridge.vCHRMemory.length/16 ; i++){
-        draw(sprite,i*16);
-        show(sprite);
-        display.show(sprite , i);
-        //System.out.println("Block " + i + " drawn");
-        }*/
-
-
     }
 
     public void printFlags(){
@@ -216,7 +173,6 @@ public class Tester {
         for(int i=0 ; i<8 ; i++){
             //System.out.print(paddedStatus.charAt(i)+ " ");
         }
-        //System.out.println();
     }
 
     public void draw(int[][] sprite , int loc){

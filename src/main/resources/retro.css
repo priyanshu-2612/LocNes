@@ -1,0 +1,36 @@
+.menu-bar {
+    -fx-background-color: white;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-font-family: "Consolas", "Segoe UI Mono", monospace;
+    -fx-font-size: 13px;
+    -fx-text-fill: black;
+}
+
+.menu {
+    -fx-text-fill: black;
+    -fx-font-family: "Consolas", "Segoe UI Mono", monospace;
+    -fx-padding: 0 6 0 6;
+}
+
+.menu-item {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+    -fx-padding: 2 12 2 12;
+    -fx-font-family: "Consolas", "Segoe UI Mono", monospace;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.menu-item:focused {
+    -fx-background-color: #C0C0C0;
+    -fx-text-fill: black;
+}
+
+.menu-item:hover {
+    -fx-background-color: #D0D0D0;
+    -fx-text-fill: black;
+}

@@ -22,14 +22,14 @@ public class Display {
     int palette_num =0;
     float SCALE = 1.5F;
 
-    Display(GuiController controller){
+    Display(GuiController controller, PPU ppu){
 //        super(256*12,256*12);
         mainScreen = controller.getMainScreen();
         gc = mainScreen.getGraphicsContext2D();
         patternScreen.setLayoutX(538);
         patternScreen.setLayoutY(10);
         gc_pt = patternScreen.getGraphicsContext2D();
-        ppu = new PPU();
+        this.ppu = ppu;
         greyscale = new java.awt.Color[4];
         greyscale[0] = new java.awt.Color(64, 64, 64);   // Dark grey
         greyscale[1] = new java.awt.Color(128, 128, 128); // Medium grey
