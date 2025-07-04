@@ -2,6 +2,7 @@ package main.java;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 
 import java.util.Random;
@@ -133,16 +134,19 @@ public class Tester {
 
         return  cpu_cycles;
     }
-    public void display_pattern_table(){
+
+    public void display_pattern_table(GraphicsContext gc_pt1, GraphicsContext gc_pt2){
         int[][] sprite = new int[8][8];
-        Random random = new Random();
-        int seed = random.nextInt(0xb);
+//        Random random = new Random();
+//        int seed = random.nextInt(0xb);
         for(int i=0 ; i< cartridge.vCHRMemory.length/16 ; i++){
             draw(sprite,i*16);
             int x = i%16, y = i/16;
-            if(y>=16) y += 1;
+            y %= 16;
+            System.out.println("X : " +  x + " Y : " + y );
             //+ ((i*16)/0x1000)*16 Pt Offset
-            display.draw_chr_rom(sprite,x,y,seed);
+            GraphicsContext gc_pt = (i < 256) ? gc_pt1 : gc_pt2;
+            display.draw_chr_rom(gc_pt, sprite,x,y);
         }
     }
 

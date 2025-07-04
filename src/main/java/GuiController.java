@@ -3,20 +3,27 @@ package main.java;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import main.java.debug.PatternTableController;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.security.PublicKey;
 import java.util.ResourceBundle;
 
 public class GuiController implements Initializable {
@@ -26,6 +33,7 @@ public class GuiController implements Initializable {
     private MenuBar menuBar;
     @FXML
     public Canvas mainScreen;
+
     private Stage stage;
     private Launch launcher;
 
@@ -81,6 +89,31 @@ public class GuiController implements Initializable {
         }
     }
 
+    public void showPatternTables(){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/pt_table.fxml"));
+            Parent root = loader.load();
+
+            PatternTableController ptController = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("Pattern Tables");
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.initOwner(menuBar.getScene().getWindow()); // optional
+            stage.show();
+
+            ptController.setLauncher(launcher);
+            ptController.showPatternTables();
+
+            // Optional: if you need to pass data to ptController
+            // ptController.setPatternData(...);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void setLauncher(Launch launch){
         this.launcher = launch;
     }
@@ -88,4 +121,5 @@ public class GuiController implements Initializable {
     public void setStage(Stage stage) {
         this.stage = stage;
     }
+
 }

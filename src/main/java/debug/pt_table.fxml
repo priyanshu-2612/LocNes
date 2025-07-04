@@ -1,0 +1,11 @@
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.canvas.Canvas?>
+<VBox fx:controller="main.java.debug.PatternTableController"
+      xmlns:fx="http://javafx.com/fxml"
+      spacing="20"
+      alignment="TOP_CENTER"
+      style="-fx-background-color: #2e2e2e; -fx-padding: 20;">
+
+   <Canvas fx:id="patternScreen1" width="192" height="192" />
+   <Canvas fx:id="patternScreen2" width="192" height="192" />
+</VBox>

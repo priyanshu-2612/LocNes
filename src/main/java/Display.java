@@ -26,9 +26,9 @@ public class Display {
 //        super(256*12,256*12);
         mainScreen = controller.getMainScreen();
         gc = mainScreen.getGraphicsContext2D();
-        patternScreen.setLayoutX(538);
-        patternScreen.setLayoutY(10);
-        gc_pt = patternScreen.getGraphicsContext2D();
+//        patternScreen.setLayoutX(538);
+//        patternScreen.setLayoutY(10);
+//        gc_pt = patternScreen.getGraphicsContext2D();
         this.ppu = ppu;
         greyscale = new java.awt.Color[4];
         greyscale[0] = new java.awt.Color(64, 64, 64);   // Dark grey
@@ -94,17 +94,13 @@ public class Display {
         }
     }
 
-    public void draw_chr_rom(int[][] tile, int x, int y,int seed){
+    public void draw_chr_rom(GraphicsContext gc_pt, int[][] tile, int x, int y){
         Color c;
         float scale = 1.5f;
         x *= 8*scale;
         y *= 8*scale;
         for(int i=0 ; i<8 ; i++){
             for(int j=0 ; j<8 ; j++){
-//                c = getFXColor(greyscale[tile[i][j]]);
-//                int color_id = ppu.getColor(palette,tile[i][j]);
-//                System.out.println(tile[i][j]);
-//                c = getFXColor(ppu.palScreen[ (tile[i][j] + seed) + ((tile[i][j]<<4)&0x30)]);
                 int paletteID = ppu.getColor(palette_num , tile[i][j]);
                 c = (getFXColor(ppu.palScreen[paletteID]));
                     gc_pt.setFill(c);

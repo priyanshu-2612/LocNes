@@ -6,42 +6,41 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
 
 <BorderPane fx:id="root" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.GuiController">
 
     <top>
-        <VBox spacing="0">
-            <!-- Custom title bar -->
-            <HBox fx:id="titleBar" styleClass="title-bar">
-                <Label fx:id="titleLabel" text="NES Emulator" styleClass="title-label"/>
-            </HBox>
+        <MenuBar fx:id="menuBar" stylesheets="@../resources/retro.css">
+            <menus>
 
-            <!-- Retro-style MenuBar -->
-            <MenuBar fx:id="menuBar" stylesheets="@../resources/retro.css">
-                <menus>
-                    <Menu text="File">
-                        <items>
-                            <MenuItem fx:id="openNesMenuItem" accelerator="Ctrl+O" onAction="#openNesFile" text="Open NES..." />
-                            <SeparatorMenuItem />
-                            <MenuItem mnemonicParsing="false" text="Close" />
-                        </items>
-                    </Menu>
-                    <Menu text="Debug">
-                        <items>
-                            <MenuItem fx:id="patternTableMenuItem" text="Show Pattern Table" />
-                        </items>
-                    </Menu>
-                    <Menu text="Help">
-                        <items>
-                            <MenuItem fx:id="aboutMenuItem" text="About" />
-                        </items>
-                    </Menu>
-                </menus>
-            </MenuBar>
-        </VBox>
+                <Menu text="File">
+                    <items>
+                        <MenuItem fx:id="openNesMenuItem" accelerator="Ctrl+O" onAction="#openNesFile" text="Open NES..." />
+                        <SeparatorMenuItem />
+                  <MenuItem mnemonicParsing="false" text="Close" />
+                    </items>
+                </Menu>
+
+                <Menu text="Debug">
+                    <items>
+                        <MenuItem fx:id="patternTableMenuItem" onAction="#showPatternTables" text="Show Pattern Table" />
+                    </items>
+                </Menu>
+            <Menu mnemonicParsing="false" text="View">
+              <items>
+                <MenuItem accelerator="Ctrl+F" mnemonicParsing="false" text="Full Screen" />
+              </items>
+            </Menu>
+
+                <!-- Help Menu -->
+                <Menu text="Help">
+                    <items>
+                        <MenuItem fx:id="aboutMenuItem" text="About" />
+                    </items>
+                </Menu>
+
+            </menus>
+        </MenuBar>
     </top>
 
     <center>

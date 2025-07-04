@@ -16,9 +16,11 @@ import javafx.event.EventHandler;
 public class Launch extends Application {
     private GuiController controller;
     private Display display;
+    private Canvas mainScreen;
     private Scene scene;
     private CPU cpu;
     private PPU ppu;
+    public Tester t;
 
     public static void main(String[] args){
         launch(args);
@@ -26,7 +28,7 @@ public class Launch extends Application {
 
     public void launchGame(String path){
 
-        Tester t = new Tester(display, scene, cpu, ppu);
+        t = new Tester(display, scene, cpu, ppu);
         t.setUpCartridge(path);
         t.readCartridge();
         t.runGame();
@@ -44,7 +46,7 @@ public class Launch extends Application {
         controller.setStage(stage);
 
         MenuBar menuBar = controller.getMenuBar();
-        Canvas mainScreen = controller.getMainScreen();
+        mainScreen = controller.getMainScreen();
         scene = new Scene(root);
         scene.setFill(Color.PEACHPUFF);
 
@@ -53,7 +55,7 @@ public class Launch extends Application {
         stage.setTitle("NES Emulator");
         stage.setWidth(524.8);//760 //512
         stage.setHeight(((542.5 + menuBar.getHeight() - 7)));//552 //480
-        stage.setResizable(true);
+        stage.setResizable(false);
 
 
         ppu = new PPU();
