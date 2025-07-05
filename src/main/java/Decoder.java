@@ -18,11 +18,11 @@ public class Decoder {
         initOpcodes();
         this.cpu = cpu;
         is = new InstructionSet(cpu, ppu);
-        try {
-            logger = new FileWriter("C:/Users/prash/Downloads/NesLog.txt.txt");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            logger = new FileWriter("C:/Users/prash/Downloads/NesLog.txt.txt");
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     public Decoder(InstructionSet instructionSet){
@@ -66,7 +66,7 @@ public class Decoder {
                 case 0:
 //                operand = (byte) cpu.cpu_memory[Short.toUnsignedInt(cpu.PC)+1];
                 operand = (byte) cpu.getData((cpu.PC +1)&0xffff);
-                operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
+//                operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
                 if(!cpu.testMode) {
 //                    try {
 //                        logger.write(PCvalue + "  " + InstOpcode + " " + operandValue + " " + Instr + "                  " + "A: " + A + " X: " + X
@@ -92,7 +92,7 @@ public class Decoder {
                 case 4:
 //                    operand = (byte) cpu.cpu_memory[Short.toUnsignedInt(cpu.PC)+1];
                     operand = (byte) cpu.getData((cpu.PC +1)&0xffff);
-                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
+//                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
                     if(!cpu.testMode){
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandValue + " " + Instr + "                 "+ "A: " + A + " X: " + X
@@ -118,7 +118,7 @@ public class Decoder {
                 case 5:
 //                    operand = (byte) cpu.cpu_memory[Short.toUnsignedInt(cpu.PC)+1];
                     operand = (byte) cpu.getData((cpu.PC +1)&0xffff);
-                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
+//                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
                     if(!cpu.testMode) {
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandValue + " " + Instr + "                 " + "A: " + A + " X: " + X
@@ -143,7 +143,7 @@ public class Decoder {
                 case 6:
 //                    operand = (byte) cpu.cpu_memory[Short.toUnsignedInt(cpu.PC)+1];
                     operand = (byte) cpu.getData((cpu.PC +1)&0xffff);
-                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
+//                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
                     if(!cpu.testMode) {
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandValue + " " + Instr + "                  " + "A: " + A + " X: " + X
@@ -169,7 +169,7 @@ public class Decoder {
                 case 9:
 //                    operand = (byte) cpu.cpu_memory[Short.toUnsignedInt(cpu.PC)+1];
                     operand = (byte) cpu.getData((cpu.PC +1)&0xffff);
-                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
+//                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xff);
                     if(!cpu.testMode) {
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandValue + " " + Instr + "                  " + "A: " + A + " X: " + X
@@ -196,10 +196,10 @@ public class Decoder {
                     operandShort = (short) ( ((cpu.getData(cpu.PC+2)<<8)&0xff00) + (cpu.getData(cpu.PC+1)&0xff) );
                     if(!cpu.testMode)
                         operandShort = (short) get_mirror(operandShort);
-                    operandShortValue = Integer.toHexString((Short.toUnsignedInt(operandShort))&0xffff);
-                    operandShortValue = String.format("%4s" , operandShortValue).replace(" " , "0");
-                    operandShortValueHigh = operandShortValue.substring(0,2);
-                    operandShortValueLow = operandShortValue.substring(2);
+//                    operandShortValue = Integer.toHexString((Short.toUnsignedInt(operandShort))&0xffff);
+//                    operandShortValue = String.format("%4s" , operandShortValue).replace(" " , "0");
+//                    operandShortValueHigh = operandShortValue.substring(0,2);
+//                    operandShortValueLow = operandShortValue.substring(2);
                     if(!cpu.testMode) {
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandShortValueHigh + " " + operandShortValueLow + " " + Instr + "              " + "A: " + A + " X: " + X
@@ -229,10 +229,10 @@ public class Decoder {
                     operandShort = (short) ( ((cpu.getData(cpu.PC+2)<<8)&0xff00) + (cpu.getData(cpu.PC+1)&0xff) );
                     if(!cpu.testMode)
                         operandShort = (short) get_mirror(operandShort);
-                    operandShortValue = Integer.toHexString((Short.toUnsignedInt(operandShort))&0xffff);
-                    operandShortValue = String.format("%4s" , operandShortValue).replace(" " , "0");
-                    operandShortValueHigh = operandShortValue.substring(0,2);
-                    operandShortValueLow = operandShortValue.substring(2);
+//                    operandShortValue = Integer.toHexString((Short.toUnsignedInt(operandShort))&0xffff);
+//                    operandShortValue = String.format("%4s" , operandShortValue).replace(" " , "0");
+//                    operandShortValueHigh = operandShortValue.substring(0,2);
+//                    operandShortValueLow = operandShortValue.substring(2);
                     if(!cpu.testMode) {
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandShortValueHigh + " " + operandShortValueLow + " " + Instr + "              " + "A: " + A + " X: " + X
@@ -260,10 +260,10 @@ public class Decoder {
                     operandShort = (short) ( ((cpu.getData(cpu.PC+2)<<8)&0xff00) + (cpu.getData(cpu.PC+1)&0xff) );
                     if(!cpu.testMode)
                         operandShort = (short) get_mirror(operandShort);
-                    operandShortValue = Integer.toHexString((Short.toUnsignedInt(operandShort))&0xffff);
-                    operandShortValue = String.format("%4s" , operandShortValue).replace(" " , "0");
-                    operandShortValueHigh = operandShortValue.substring(0,2);
-                    operandShortValueLow = operandShortValue.substring(2);
+//                    operandShortValue = Integer.toHexString((Short.toUnsignedInt(operandShort))&0xffff);
+//                    operandShortValue = String.format("%4s" , operandShortValue).replace(" " , "0");
+//                    operandShortValueHigh = operandShortValue.substring(0,2);
+//                    operandShortValueLow = operandShortValue.substring(2);
                     if(!cpu.testMode) {
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandShortValueHigh + " " + operandShortValueLow + " " + Instr + "              " + "A: " + A + " X: " + X
@@ -315,7 +315,7 @@ public class Decoder {
                 case 10:
 //                    operand = (byte) cpu.cpu_memory[Short.toUnsignedInt(cpu.PC)+1];
                     operand = (byte) cpu.getData((cpu.PC +1)&0xffff);
-                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xffff);
+//                    operandValue = Integer.toHexString((Byte.toUnsignedInt(operand))&0xffff);
                     if(!cpu.testMode) {
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandValue + " " + Instr + "                 " + "A: " + A + " X: " + X
@@ -342,10 +342,10 @@ public class Decoder {
                     operandShort = (short) ( ((cpu.getData(cpu.PC+2)<<8)&0xff00) + (cpu.getData(cpu.PC+1)&0xff) );
                     if(!cpu.testMode)
                         operandShort = (short) get_mirror(operandShort);
-                    operandShortValue = Integer.toHexString((Short.toUnsignedInt(operandShort))&0xffff);
-                    operandShortValue = String.format("%4s" , operandShortValue).replace(" " , "0");
-                    operandShortValueHigh = operandShortValue.substring(0,2);
-                    operandShortValueLow = operandShortValue.substring(2);
+//                    operandShortValue = Integer.toHexString((Short.toUnsignedInt(operandShort))&0xffff);
+//                    operandShortValue = String.format("%4s" , operandShortValue).replace(" " , "0");
+//                    operandShortValueHigh = operandShortValue.substring(0,2);
+//                    operandShortValueLow = operandShortValue.substring(2);
                     if(!cpu.testMode) {
 //                        try {
 //                            logger.write(PCvalue + "  " + InstOpcode + " " + operandShortValueHigh + " " + operandShortValueLow + " " + Instr + "              " + "A: " + A + " X: " + X
@@ -387,7 +387,7 @@ public class Decoder {
         int instruction = Integer.parseInt(inst[0], 16);
         String task = opcodeMap.get(instruction);
 
-        System.out.println("Executing " + task + " pc: " + Integer.toHexString((Short.toUnsignedInt(cpu.PC))&0xffff) );
+//        System.out.println("Executing " + task + " pc: " + Integer.toHexString((Short.toUnsignedInt(cpu.PC))&0xffff) );
         int addressingType = Integer.parseInt(task.substring(3));
         Method method = null;
         byte operand;

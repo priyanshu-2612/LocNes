@@ -33,6 +33,7 @@ public class Launch extends Application {
         t.setUpCartridge(path);
         t.readCartridge();
         t.runGame();
+
     }
 
     @Override
@@ -53,7 +54,7 @@ public class Launch extends Application {
 
 
         stage.setScene(scene);
-        stage.getIcons().add(new Image("file:C:/Users/prash/Downloads/FFRK_Thunder_Dragon_FFIV.png"));
+//        stage.getIcons().add(new Image("file:C:/Users/prash/Downloads/FFRK_Thunder_Dragon_FFIV.png"));
         stage.setTitle("NES Emulator");
         stage.setWidth(524.8);//760 //512
         stage.setHeight(((542.5 + menuBar.getHeight() - 7)));//552 //480
@@ -67,80 +68,7 @@ public class Launch extends Application {
         stage.show();
 
 
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if(event.getCode().toString().equals("L"))
-                    System.out.println("W : " + root.getWidth() + " H : " + root.getHeight());
-            }
-        });
-
         //TODO: Use gameloop
-
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent keyEvent) {
-//                System.out.println("Key is " + keyEvent.getCode().toString());
-                switch(keyEvent.getCode().toString()){
-                    case "X":
-                        cpu.controller.controller_input[0] |= 0x80;
-                        break;
-                    case "Z":
-                        cpu.controller.controller_input[0] |= 0x40;
-                        break;
-                    case "BACK_SPACE":
-                        cpu.controller.controller_input[0] |= 0x20;
-                        break;
-                    case "ENTER":
-                        cpu.controller.controller_input[0] |= 0x10;
-                        break;
-                    case "UP":
-                        cpu.controller.controller_input[0] |= 0x08;
-                        break;
-                    case "DOWN":
-                        cpu.controller.controller_input[0] |= 0x04;
-                        break;
-                    case "LEFT":
-                        cpu.controller.controller_input[0] |= 0x02;
-                        break;
-                    case "RIGHT":
-                        cpu.controller.controller_input[0] |= 0x01;
-                        break;
-                }
-            }
-        });
-        scene.addEventHandler(KeyEvent.KEY_RELEASED, new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent keyEvent) {
-//                System.out.println("Key is " + keyEvent.getCode().toString());
-                switch(keyEvent.getCode().toString()){
-                    case "X":
-                        cpu.controller.controller_input[0] ^= 0x80;
-                        break;
-                    case "Z":
-                        cpu.controller.controller_input[0] ^= 0x40;
-                        break;
-                    case "BACK_SPACE":
-                        cpu.controller.controller_input[0] ^= 0x20;
-                        break;
-                    case "ENTER":
-                        cpu.controller.controller_input[0] ^= 0x10;
-                        break;
-                    case "UP":
-                        cpu.controller.controller_input[0] ^= 0x08;
-                        break;
-                    case "DOWN":
-                        cpu.controller.controller_input[0] ^= 0x04;
-                        break;
-                    case "LEFT":
-                        cpu.controller.controller_input[0] ^= 0x02;
-                        break;
-                    case "RIGHT":
-                        cpu.controller.controller_input[0] ^= 0x01;
-                        break;
-                }
-            }
-        });
 
         //Timeline is slow and not suitable for NES
 

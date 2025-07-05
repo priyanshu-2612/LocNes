@@ -25,6 +25,73 @@ public class Tester {
         this.cpu = cpu;
         bus = new Bus(cpu,ppu);
         decoder = new Decoder(cpu,ppu);
+
+
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+//                System.out.println("Key is " + keyEvent.getCode().toString());
+                switch(keyEvent.getCode().toString()){
+                    case "X":
+                        cpu.controller.controller_input[0] |= 0x80;
+                        break;
+                    case "Z":
+                        cpu.controller.controller_input[0] |= 0x40;
+                        break;
+                    case "BACK_SPACE":
+                        cpu.controller.controller_input[0] |= 0x20;
+                        break;
+                    case "ENTER":
+                        cpu.controller.controller_input[0] |= 0x10;
+                        break;
+                    case "UP":
+                        cpu.controller.controller_input[0] |= 0x08;
+                        break;
+                    case "DOWN":
+                        cpu.controller.controller_input[0] |= 0x04;
+                        break;
+                    case "LEFT":
+                        cpu.controller.controller_input[0] |= 0x02;
+                        break;
+                    case "RIGHT":
+                        cpu.controller.controller_input[0] |= 0x01;
+                        break;
+                }
+            }
+        });
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+//                System.out.println("Key is " + keyEvent.getCode().toString());
+                switch(keyEvent.getCode().toString()){
+                    case "X":
+                        cpu.controller.controller_input[0] &= ~0x80;
+                        break;
+                    case "Z":
+                        cpu.controller.controller_input[0] &= ~0x40;
+                        break;
+                    case "BACK_SPACE":
+                        cpu.controller.controller_input[0] &= ~0x20;
+                        break;
+                    case "ENTER":
+                        cpu.controller.controller_input[0] &= ~0x10;
+                        break;
+                    case "UP":
+                        cpu.controller.controller_input[0] &= ~0x08;
+                        break;
+                    case "DOWN":
+                        cpu.controller.controller_input[0] &= ~0x04;
+                        break;
+                    case "LEFT":
+                        cpu.controller.controller_input[0] &= ~0x02;
+                        break;
+                    case "RIGHT":
+                        cpu.controller.controller_input[0] &= ~0x01;
+                        break;
+                }
+            }
+        });
+
     }
 
     public void setUpCartridge(String path){
@@ -67,9 +134,7 @@ public class Tester {
                     this.stop();
                     return;
                 }
-//                t.display_pattern_table();
                 long elapsed = System.nanoTime() - start;
-//                long elapsed = now - start;
 //                System.out.println("Elapsed: " + (elapsed / 1_000_000.0) + " ms"); //for checking fps
 
                 long sleepTimeNs = (long)(FRAME_DURATION_NS - elapsed);
@@ -169,57 +234,11 @@ public class Tester {
 
         ppu.display = display;
 
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            int step=0;
-            @Override
-            public void handle(KeyEvent event) {
-                if(event.getCode().toString().equals("Q")){
-                    display_palette_ram();
-                    display_nametable();
-                    System.exit(99);
-                }
-            }
-        });
-
         cpu.ppu = ppu;
         ppu.cpu = cpu;
 
         //TODO: for gameLoop
 
-
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            int step=0;
-            @Override
-            public void handle(KeyEvent event) {
-                if(event.getCode().toString().equals("SPACE")){
-                    int c=1;
-                    while(c-- > 0) {
-                        int cycles;
-                        cycles = decoder.run_one_cycle();
-                        printFlags();
-                        //System.out.println("The instruction took " + cycles + " to execute");
-//                        cpu.ppu_registers_dump(ppu_Reg_values);
-                        cycles *= 3;
-                        while (cycles-- > 0) {
-                            ppu.cycle();
-                            if (ppu.nmi) {
-                                ppu.nmi = false;
-                                decoder.is.nmi();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            int step=0;
-            @Override
-            public void handle(KeyEvent event) {
-                if(event.getCode().toString().equals("L")){
-                }
-            }
-        });
     }
 
     public void printFlags(){
