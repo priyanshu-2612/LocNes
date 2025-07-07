@@ -1,17 +1,12 @@
 package main.java;
 
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.MenuBar;
-import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.scene.input.*;
-import javafx.event.EventHandler;
 
 
 public class Launch extends Application {
@@ -41,7 +36,7 @@ public class Launch extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/fxml/sample.fxml"));
         BorderPane root = loader.load();
 
         controller = loader.getController();
@@ -57,7 +52,7 @@ public class Launch extends Application {
 
         stage.setScene(scene);
 //        stage.getIcons().add(new Image("file:C:/Users/prash/Downloads/FFRK_Thunder_Dragon_FFIV.png"));
-        stage.setTitle("NES Emulator");
+        stage.setTitle("LocNes v0.9.4");
         stage.setWidth(524.8);//760 //512
         stage.setHeight(((542.5 + menuBar.getHeight() - 7)));//552 //480
         stage.setResizable(false);

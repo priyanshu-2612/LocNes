@@ -2,7 +2,6 @@ package main.java;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -11,13 +10,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -28,7 +23,6 @@ import main.java.debug.PatternTableController;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.PublicKey;
 import java.util.ResourceBundle;
 
 public class GuiController implements Initializable {
@@ -101,7 +95,7 @@ public class GuiController implements Initializable {
         if(launcher.t == null)
             return;
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/pt_table.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/fxml/pt_table.fxml"));
             Parent root = loader.load();
 
             ptController = loader.getController();
@@ -134,7 +128,7 @@ public class GuiController implements Initializable {
         if(launcher.t == null)
             return;
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/name_table.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/fxml/name_table.fxml"));
             Parent root = loader.load();
 
             nametController = loader.getController();
@@ -158,7 +152,7 @@ public class GuiController implements Initializable {
         if(launcher.t == null)
             return;
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/cpu_debug.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/fxml/cpu_debug.fxml"));
             Parent root = loader.load();
 
             cpuDumpController = loader.getController();
@@ -201,6 +195,19 @@ public class GuiController implements Initializable {
         }
     }
 
+    public void about(){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/fxml/about.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("About LocNes");
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void clearScreens() {
         if(cpuDumpController!=null)

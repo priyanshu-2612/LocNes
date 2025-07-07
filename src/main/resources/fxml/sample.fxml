@@ -10,7 +10,7 @@
 <BorderPane fx:id="root" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.GuiController">
 
     <top>
-        <MenuBar fx:id="menuBar" stylesheets="@../resources/retro.css">
+        <MenuBar fx:id="menuBar" stylesheets="@../css/retro.css">
             <menus>
 
                 <Menu text="File">
@@ -34,13 +34,11 @@
                 <MenuItem accelerator="Ctrl+F" mnemonicParsing="false" text="Full Screen" />
               </items>
             </Menu>
-
-                <!-- Help Menu -->
-                <Menu text="Help">
-                    <items>
-                        <MenuItem fx:id="aboutMenuItem" text="About" />
-                    </items>
-                </Menu>
+            <Menu mnemonicParsing="false" text="Help">
+              <items>
+                  <MenuItem mnemonicParsing="false" onAction="#about" text="About" />
+              </items>
+            </Menu>
 
             </menus>
         </MenuBar>
