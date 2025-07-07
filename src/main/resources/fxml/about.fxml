@@ -14,7 +14,7 @@
 
         <Text text="Emulator by Priyanshu Sharma&#10;&#10;" />
 
-        <Text text="• CPU   : 6502 (core + unofficial ops)&#10;" />
+        <Text text="• CPU   : 6502 (ops + test suite)&#10;" />
         <Text text="• PPU   : Render, Sprite‑0‑Hit, Scrolling&#10;" />
         <Text text="• APU   : (planned)&#10;" />
         <Text text="• Mapper: NROM (MMC1 WIP)&#10;&#10;" />
@@ -23,7 +23,7 @@
         <Text text="• Live register &amp; flag view&#10;" />
         <Text text="• Pattern / Name-table visualizer&#10;" />
         <Text text="• Sprite viewer&#10;" />
-        <Text text="• Rewind &amp; step-through (Betaβ)&#10;&#10;" />
+        <Text text="• Pause &amp; step-through (Beta)&#10;&#10;" />
 
         <Text text="Built with:&#10;" />
         <Text text="• Java 22 + JavaFX&#10;" />
