@@ -98,6 +98,8 @@ public class GuiController implements Initializable {
     }
 
     public void showPatternTables(){
+        if(launcher.t == null)
+            return;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/pt_table.fxml"));
             Parent root = loader.load();
@@ -129,6 +131,8 @@ public class GuiController implements Initializable {
     }
 
     public void showNameTables(){
+        if(launcher.t == null)
+            return;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/name_table.fxml"));
             Parent root = loader.load();
@@ -151,6 +155,8 @@ public class GuiController implements Initializable {
     }
 
     public void seeCPU(){
+        if(launcher.t == null)
+            return;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/cpu_debug.fxml"));
             Parent root = loader.load();
