@@ -25,6 +25,8 @@
                     <items>
                         <MenuItem fx:id="patternTableMenuItem" onAction="#showPatternTables" text="Show Pattern Table" />
                   <MenuItem mnemonicParsing="false" onAction="#showNameTables" text="Show Name Table" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#seeCPU" text="see CPU" />
                     </items>
                 </Menu>
             <Menu mnemonicParsing="false" text="View">

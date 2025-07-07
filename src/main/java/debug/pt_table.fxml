@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_LEFT" spacing="10" style="-fx-background-color: #fffaf0; -fx-padding: 8 20 20 20;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.debug.PatternTableController">
+<VBox alignment="TOP_LEFT" prefHeight="483.0" prefWidth="232.0" spacing="10" style="-fx-background-color: #fffaf0; -fx-padding: 8 20 20 20;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.debug.PatternTableController">
 
    <Label styleClass="pt-label" text="Pattern Table 0:">
       <font>
@@ -22,5 +22,10 @@
    </Label>
 
    <Canvas fx:id="patternScreen2" height="192" width="192" />
+   <Label alignment="CENTER" prefHeight="14.0" prefWidth="207.0" text="Press [Q] to cycle palette" textAlignment="CENTER">
+      <font>
+         <Font name="Consolas" size="12.0" />
+      </font>
+   </Label>
 
 </VBox>

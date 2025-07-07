@@ -1,9 +1,15 @@
 package main.java.debug;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import main.java.Launch;
+
+import java.util.concurrent.TimeoutException;
 
 public class NameTableController {
 

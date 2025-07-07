@@ -1,9 +1,11 @@
 package main.java;
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
+import main.java.debug.CpuDumpController;
 
 
 public class Tester {
@@ -17,6 +19,9 @@ public class Tester {
     Bus bus;
     Scene scene;
     long SystemCounter = 0;
+    private CpuDumpController debugController;
+    private GuiController guiController;
+    private boolean paused = false, uiDirty=false;
 
     public Tester(Display display, Scene scene, CPU cpu, PPU ppu) {
         this.display = display;
@@ -91,7 +96,6 @@ public class Tester {
                 }
             }
         });
-
     }
 
     public void setUpCartridge(String path){
@@ -114,18 +118,27 @@ public class Tester {
 
             @Override
             public void handle(long now) {
+                if(paused){
+                    return;
+                }
                 if (lastTime == 0) {
                     lastTime = now;
                     return;
                 }
 
                 long start = System.nanoTime();
-//                long start = now;
 
                 try {
                     double cycles = 0;
+                    if (uiDirty) {
+                        guiController.clearScreens();
+                        uiDirty = false;
+                    }
                     while (cycles < critical) {
                         cycles += cycle();
+                        if(SystemCounter % 50 ==0 && debugController != null){
+                            debugController.showCpuDump();
+                        }
                     }
                 }
                 catch (RuntimeException e) {
@@ -134,18 +147,19 @@ public class Tester {
                     this.stop();
                     return;
                 }
+
                 long elapsed = System.nanoTime() - start;
 //                System.out.println("Elapsed: " + (elapsed / 1_000_000.0) + " ms"); //for checking fps
 
                 long sleepTimeNs = (long)(FRAME_DURATION_NS - elapsed);
 
-                if (sleepTimeNs > 0) {
-                    try {
-                        Thread.sleep(sleepTimeNs / 1_000_000, (int)(sleepTimeNs % 1_000_000));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+//                if (sleepTimeNs > 0) {
+//                    try {
+//                        Thread.sleep(sleepTimeNs / 1_000_000, (int)(sleepTimeNs % 1_000_000));
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
 
                 lastTime = now;
             }
@@ -196,6 +210,13 @@ public class Tester {
 
 
         return  cpu_cycles;
+    }
+
+    public void singleStep(){
+        int cyclesUsed = decoder.run_one_cycle();
+        while(cyclesUsed-- > 0){
+            ppu.cycle();
+        }
     }
 
     public void display_pattern_table(GraphicsContext gc_pt1, GraphicsContext gc_pt2){
@@ -396,4 +417,39 @@ public class Tester {
         }
     }
 
+    public void setDebugController(CpuDumpController debugController) {
+        this.debugController = debugController;
+    }
+
+    public void setGuiController(GuiController guiController) {
+        this.guiController = guiController;
+    }
+
+    public void setUiDirty(boolean uiDirty) {
+        this.uiDirty = uiDirty;
+    }
+
+    public Decoder getDecoder() {
+        return decoder;
+    }
+
+    public void togglePause(){
+        this.paused = !this.paused;
+    }
+
+    public void pause(){
+        this.paused = true;
+    }
+
+    public void unpause(){
+        this.paused = false;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void onClose(){
+        paused = true;
+    }
 }

@@ -167,4 +167,39 @@ public class CPU {
     public void turnOffTestMode(){
         testMode = false;
     }
+
+    public boolean getFlag(char n) {
+        int bit;
+        int status = Status & 0xff;
+        switch (n) {
+            case 'C':
+                bit =  status & 0x01;
+                break;
+            case 'Z':
+                bit = (status >> 1) & 0x01;
+                break;
+            case 'I':
+                bit = (status >> 2) & 0x01;
+                break;
+            case 'D':
+                bit = (status >> 3) & 0x01;
+                break;
+            case 'B':
+                bit = (status >> 4) & 0x01;
+                break;
+            case 'V':
+                bit = (status >> 6) & 0x01;
+                break;
+            case 'N':
+                bit = (status >> 7) & 0x01;
+                break;
+            default:
+                return false;
+        }
+        return bit != 0;
+    }
+
+    public static String hex(int v, int len) {
+        return String.format("%0" + len + "X", v & ((1 << (len * 4)) - 1));
+    }
 }

@@ -32,6 +32,8 @@ public class Launch extends Application {
         t = new Tester(display, scene, cpu, ppu);
         t.setUpCartridge(path);
         t.readCartridge();
+        t.setGuiController(controller);
+        t.setUiDirty(true);
         t.runGame();
 
     }
@@ -50,7 +52,7 @@ public class Launch extends Application {
         MenuBar menuBar = controller.getMenuBar();
         mainScreen = controller.getMainScreen();
         scene = new Scene(root);
-        scene.setFill(Color.PEACHPUFF);
+//        scene.setFill(Color.PEACHPUFF);
 
 
         stage.setScene(scene);
@@ -97,5 +99,9 @@ public class Launch extends Application {
 //
 //        gameLoop.play();
 
+    }
+
+    public CPU getCPU(){
+        return this.cpu;
     }
 }

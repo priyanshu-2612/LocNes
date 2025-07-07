@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="530" prefWidth="460" spacing="10" style="-fx-padding: 12 16 12 16;" stylesheets="@../../resources/debug.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.debug.CpuDumpController">
+
+    <HBox spacing="15">
+        <Label styleClass="cpu-label" text="PC:">
+            <font>
+                <Font name="Consolas Bold" size="12.0" />
+            </font></Label>
+        <Label fx:id="pcLabel" text="0000" />
+        <Label styleClass="cpu-label" text="A:">
+            <font>
+                <Font name="Consolas Bold" size="12.0" />
+            </font></Label>
+        <Label fx:id="aLabel" text="00" />
+        <Label styleClass="cpu-label" text="X:">
+            <font>
+                <Font name="Consolas Bold" size="12.0" />
+            </font></Label>
+        <Label text="00" fx:id="xLabel" />
+        <Label styleClass="cpu-label" text="Y:">
+            <font>
+                <Font name="Consolas Bold" size="12.0" />
+            </font></Label>
+        <Label fx:id="yLabel" text="00" />
+        <Label styleClass="cpu-label" text="SP:">
+            <font>
+                <Font name="Consolas Bold" size="12.0" />
+            </font></Label>
+        <Label fx:id="spLabel" text="00" />
+        <Label styleClass="cpu-label" text="P:">
+            <font>
+                <Font name="Consolas Bold" size="12.0" />
+            </font></Label>
+        <Label fx:id="pLabel" text="00" />
+    </HBox>
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <CheckBox fx:id="nFlag" disable="true" styleClass="cpu-flag" text="N" />
+        <CheckBox fx:id="vFlag" disable="true" styleClass="cpu-flag" text="V" />
+        <CheckBox fx:id="bFlag" disable="true" styleClass="cpu-flag" text="B" />
+        <CheckBox fx:id="dFlag" disable="true" styleClass="cpu-flag" text="D" />
+        <CheckBox fx:id="iFlag" disable="true" styleClass="cpu-flag" text="I" />
+        <CheckBox fx:id="zFlag" disable="true" styleClass="cpu-flag" text="Z" />
+        <CheckBox fx:id="cFlag" disable="true" styleClass="cpu-flag" text="C" />
+    </HBox>
+
+    <HBox spacing="5">
+        <CheckBox fx:id="pausedFlag" onAction="#pauseCheckBoxSelected" prefHeight="31.0" prefWidth="82.0" styleClass="reversed-checkbox" text="Paused" />
+    </HBox>
+
+    <Label styleClass="cpu-label" text="Next instructions:" />
+    <TableView fx:id="disasmTable" prefHeight="400">
+        <columns>
+            <TableColumn fx:id="addrCol" prefWidth="68.0" text="Addr" />
+            <TableColumn fx:id="bytesCol" prefWidth="149.99996948242188" text="Bytes" />
+            <TableColumn fx:id="instrCol" prefWidth="222.0" text="Instruction" />
+        </columns>
+    </TableView>
+
+    <Label text="[R] – single‑step   |   [P] – pause/resume" textAlignment="CENTER" />
+</VBox>

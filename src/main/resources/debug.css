@@ -1,0 +1,127 @@
+/* Root: Global font and background for retro feel */
+.root {
+    -fx-font-family: "Consolas", monospace;
+    -fx-font-size: 13px;
+    -fx-background-color: #fffaf0;
+}
+
+/* Labels (PC, A, X, etc.) */
+.cpu-label {
+    -fx-text-fill: #3b3b3b;
+    -fx-font-weight: bold;
+}
+
+/* === Checkbox Styling === */
+
+/* Shared styling for all checkboxes */
+.check-box {
+    -fx-padding: 4;
+    -fx-font-size: 14px;
+    -fx-text-fill: #111;
+}
+
+/* Box (unchecked state) */
+.check-box .box {
+    -fx-background-color: #fdf6e3;
+    -fx-border-color: #444;
+    -fx-border-width: 2;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+}
+
+/* Box (checked state) */
+.check-box:selected .box {
+    -fx-background-color: #d9b44a;
+    -fx-border-color: #222;
+}
+
+/* Disabled flag checkboxes (N, V, etc.) */
+.check-box.cpu-flag:disabled {
+    -fx-opacity: 0.5;
+    -fx-text-fill: #000000;
+}
+
+/* === TableView Styling === */
+
+.table-view {
+    -fx-background-color: #fefbd8;
+    -fx-table-cell-border-color: #c0c0c0;
+    -fx-border-color: #a5a5a5;
+    -fx-border-width: 1;
+}
+
+/* Header */
+.table-view .column-header {
+    -fx-background-color: linear-gradient(#f1dcb0, #e5c38b);
+    -fx-text-fill: #333;
+    -fx-font-weight: bold;
+    -fx-border-color: #a5a5a5;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Header text padding */
+.table-view .column-header .label {
+    -fx-padding: 4 8 4 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Normal row */
+.table-row-cell {
+    -fx-background-color: transparent;
+}
+
+/* Selected row */
+.table-row-cell:filled:selected {
+    -fx-background-color: #8AE3C1; /* soft retro blue */
+}
+
+/* Selected cell text */
+.table-row-cell:filled:selected .text {
+    -fx-fill: white; /* ensure readability */
+}
+
+/* General cell */
+.table-cell {
+    -fx-text-fill: black;
+    -fx-font-family: Consolas;
+    -fx-font-size: 13px;
+}
+.table-view .scroll-bar:horizontal {
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-opacity: 0;
+    -fx-padding: 0;
+}
+
+/* =============== Scrollbar Styling =============== */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: #fefbd8; /* match your table bg */
+    -fx-background-radius: 5;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #a3d3c5;  /* soft teal */
+    -fx-background-insets: 2;
+    -fx-background-radius: 5;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #8fcbbc;
+}
+
+.scroll-bar:vertical .thumb:pressed {
+    -fx-background-color: #6db2a0;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-padding: 4;
+    -fx-background-color: transparent;
+}

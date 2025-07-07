@@ -1,10 +1,17 @@
 package main.java;
 
+import main.java.debug.DisassemblyRow;
+import main.java.debug.Instruction;
+
 import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+
+import static main.java.CPU.hex;
 
 public class Decoder {
     FileWriter logger;
@@ -12,6 +19,7 @@ public class Decoder {
     CPU cpu;
     HashMap<Integer , String> opcodeMap = new HashMap<>();
     HashMap<Integer , String> addressingmodeMap = new HashMap<>();
+    Map<Integer, Instruction> instrCache = new HashMap<>();
 
     public Decoder(CPU cpu, PPU ppu){
         initModes();
@@ -611,6 +619,95 @@ public class Decoder {
             val = (val-0x2000)%0x8 + 0x2000;
 
         return val;
+    }
+
+    public List<DisassemblyRow> disassemble(int count) {
+        List<DisassemblyRow> rows = new ArrayList<>();
+        int pc = cpu.getPC();
+        int ptr = pc;
+
+        for (int i = 0; i < count; i++) {
+            int op = cpu.getData(ptr) & 0xFF;
+            Instruction ins = decode(op);
+            if (ins == null) {
+                rows.add(newRow(ptr, op, 1, "???"));
+                ptr += 1;
+                continue;
+            }
+
+            int size = ins.size();
+            String bytes = hex(op, 2);
+            for (int j = 1; j < size; j++) {
+                bytes += " " + hex(cpu.getData(ptr + j), 2);
+            }
+
+            String operand = formatOperand(ins.mode(), ptr + 1);
+            rows.add(new DisassemblyRow(hex(ptr, 4), bytes, ins.name() + " " + operand.trim()));
+            ptr += size;
+        }
+
+        return rows;
+    }
+
+    private DisassemblyRow newRow(int addr, int op, int size, String line) {
+        StringBuilder b = new StringBuilder(hex(op, 2));
+        for (int j = 1; j < size; j++) {
+            b.append(" ").append(hex(cpu.getData(addr + j), 2));
+        }
+        return new DisassemblyRow(hex(addr, 4), b.toString(), line.trim());
+    }
+
+
+    private String formatOperand(String mode, int addr) {
+        int lo = cpu.getData(addr) & 0xFF;
+        int hi = cpu.getData(addr + 1) & 0xFF;
+        int word = (hi << 8) | lo;
+
+        return switch (mode) {
+            case "IMM" -> "#$" + hex(lo, 2);
+            case "ZP"  -> "$" + hex(lo, 2);
+            case "ZPX" -> "$" + hex(lo, 2) + ",X";
+            case "ZPY" -> "$" + hex(lo, 2) + ",Y";
+            case "ABS" -> "$" + hex(word, 4);
+            case "ABX" -> "$" + hex(word, 4) + ",X";
+            case "ABY" -> "$" + hex(word, 4) + ",Y";
+            case "IND" -> "($" + hex(word, 4) + ")";
+            case "IDX" -> "($" + hex(lo, 2) + ",X)";
+            case "IDY" -> "($" + hex(lo, 2) + "),Y";
+            case "REL" -> {
+                int offset = (byte) lo; // sign-extend
+                int target = (addr + 1 + offset) & 0xFFFF;
+                yield "$" + hex(target, 4);
+            }
+            default -> "";
+        };
+    }
+
+    private Instruction decode(int opcode) {
+        return instrCache.computeIfAbsent(opcode, op -> {
+            String tag = opcodeMap.get(op);
+            if (tag == null) return null;           // unknown / unimplemented
+
+            // split "lda0" → mnemonic="lda", idx=0
+            int split = tag.length() - 1;
+            while (split > 0 && Character.isDigit(tag.charAt(split-1))) split--;
+            String mnemonic = tag.substring(0, split).toUpperCase();   // LDA, TAX …
+            int idx         = Integer.parseInt(tag.substring(split));  // 0,6,9…
+
+            return switch (idx) {          // idx → mode / size
+                case 0  -> new Instruction(mnemonic, "IMM", 2);   // #$nn
+                case 1  -> new Instruction(mnemonic, "ABS", 3);   // $nnnn
+                case 2  -> new Instruction(mnemonic, "ABX", 3);   // $nnnn,X
+                case 3  -> new Instruction(mnemonic, "ABY", 3);   // $nnnn,Y
+                case 4  -> new Instruction(mnemonic, "IDX", 2);   // ($nn,X)
+                case 5  -> new Instruction(mnemonic, "IDY", 2);   // ($nn),Y
+                case 6  -> new Instruction(mnemonic, "ZP",  2);   // $nn
+                case 8  -> new Instruction(mnemonic, "IMP", 1);   // implied / accumulator
+                case 9  -> new Instruction(mnemonic, "ZPX", 2);   // $nn,X
+                case 10 -> new Instruction(mnemonic, "REL",  2);
+                default -> null;              // add more if you invent new codes
+            };
+        });
     }
 
     public void initOpcodes(){

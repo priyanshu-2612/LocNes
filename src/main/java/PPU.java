@@ -120,20 +120,17 @@ public class PPU {
                 }
             }
 
-            // End of a visible scanline, so increment downwards...
             if (cycle == 256)
             {
                 IncrementScrollY();
             }
 
-            //...and reset the x position
             if (cycle == 257)
             {
                 LoadBackgroundShifters();
                 transfer_addressx();
             }
 
-            // Superfluous reads of tile id at end of scanline
             if (cycle == 338 || cycle == 340)
             {
                 bg_next_tile_id = ppuRead((0x2000 | (V & 0x0FFF)));
@@ -142,7 +139,6 @@ public class PPU {
 
             if (scanline == -1 && cycle >= 280 && cycle < 305)
             {
-                // End of vertical blank period so reset the Y address ready for rendering
                 transfer_addressy();
             }
 
@@ -196,13 +192,6 @@ public class PPU {
             }
 
             if(cycle == 340){
-
-//                if(scanline < 240){ // helped debug
-//                    System.out.printf("scan=%3d  found=%d  y0=%02X  firstX=%02X\n",
-//                            scanline, spriteCount,
-//                            spriteCount>0? spriteScanline[0].y : 0,
-//                            spriteCount>0? spriteScanline[0].x : 0);
-//                }
 
                 for(int i=0; i<spriteCount ; i++){
                     int sprite_pattern_bits_lo, sprite_pattern_bits_hi; // 1 byte
@@ -275,7 +264,7 @@ public class PPU {
 
         if (scanline == 240)
         {
-            // Post Render Scanline - Do Nothing!
+            // Post Render Scanline - Do Nothing
         }
 
         if (scanline >= 241 && scanline < 261)
@@ -291,40 +280,24 @@ public class PPU {
         }
 
 
-        // Composition - We now have background pixel information for this cycle
-        // At this point we are only interested in background
 
-        byte bg_pixel = 0x00;   // The 2-bit pixel to be rendered
-        byte bg_palette = 0x00; // The 3-bit index of the palette the pixel indexes
+        byte bg_pixel = 0x00;
+        byte bg_palette = 0x00;
 
-        // We only render backgrounds if the PPU is enabled to do so. Note if
-        // background rendering is disabled, the pixel and palette combine
-        // to form 0x00. This will fall through the colour tables to yield
-        // the current background colour in effect
         if (backgRenderingEnabled())
         {
-            // Handle Pixel Selection by selecting the relevant bit
-            // depending upon fine x scrolling. This has the effect of
-            // offsetting ALL background rendering by a set number
-            // of pixels, permitting smooth scrolling
             int fine_x = X & 0xffff;
-            //System.out.println("V : " + Integer.toBinaryString(V));
             int bit_mux =  ((0x8000 >> fine_x) & 0xffff); // 16 bits
 
-            // Select Plane pixels by extracting from the shifter
-            // at the required location.
             int p0_pixel = (byte) ((bg_shifter_pattern_lo & bit_mux) != 0 ? 1 : 0); // 8 bits
             int p1_pixel = (byte) ((bg_shifter_pattern_hi & bit_mux) != 0 ? 1 : 0); // 8 bits
 
-            // Combine to form pixel index
             bg_pixel = (byte) ((p1_pixel << 1) | p0_pixel);
-            //System.out.println("Background pixel is " + bg_pixel);
 
             // Get palette
               byte bg_pal0 = (byte) ((bg_shifter_attrib_lo & bit_mux) != 0 ? 1 : 0);
               byte bg_pal1 = (byte) ((bg_shifter_attrib_hi & bit_mux) != 0 ? 1 : 0);
               bg_palette = (byte) ((bg_pal1 << 1) | bg_pal0);
-            //System.out.println("Palette is " + Integer.toHexString(Byte.toUnsignedInt(bg_palette)) );
         }
 
         byte fg_pixel = 0;
@@ -355,46 +328,30 @@ public class PPU {
             }
         }
 
-        // Now we have a final pixel colour, and a palette for this cycle
-        // of the current scanline. Lets at long last, draw that ^&%*er :P
 
-        byte pixel_final = 0x00;   // The FINAL Pixel...
+        byte pixel_final = 0x00;
         byte palette_final = 0x00;
 
         if (bg_pixel == 0 && fg_pixel == 0)
         {
-            // The background pixel is transparent
-            // The foreground pixel is transparent
-            // No winner, draw "background" colour
             pixel_final = 0x00;
             palette_final = 0x00;
         }
         else if (bg_pixel == 0 && fg_pixel > 0)
         {
-            // The background pixel is transparent
-            // The foreground pixel is visible
-            // Foreground wins!
             pixel_final = fg_pixel;
             palette_final = fg_palette;
         }
         else if (bg_pixel > 0 && fg_pixel == 0)
         {
-            // The background pixel is visible
-            // The foreground pixel is transparent
-            // Background wins!
             pixel_final = bg_pixel;
             palette_final = bg_palette;
         }
         else if (bg_pixel > 0 && fg_pixel > 0) {
-            // The background pixel is visible
-            // The foreground pixel is visible
-            // Hmmm...
             if (fg_priority==1) {
-                // Foreground cheats its way to victory!
                 pixel_final = fg_pixel;
                 palette_final = fg_palette;
             } else {
-                // Background is considered more important!
                 pixel_final = bg_pixel;
                 palette_final = bg_palette;
             }
@@ -439,11 +396,8 @@ public class PPU {
 
         }
 
-        //sprScreen->SetPixel(cycle - 1, scanline, GetColourFromPaletteRam(bg_palette, bg_pixel));
         if(cycle >= 1 && cycle <= 256)
             display.setPixel(cycle-1 , scanline, getColor(palette_final, pixel_final));
-
-        // Advance renderer - it never stops, it's relentless
 
         cycle++;
         if (cycle >= 341)
@@ -594,8 +548,6 @@ public class PPU {
 
     public void transfer_addressx(){
         if(backgRenderingEnabled() || spriteRenderingEnabled()) {
-//            V = (((V & 0xfbff) | (T & 0x400)) & 0xffff) & 0xffff; //ntx
-//            V =  (((V & 0xffe0) | (T & 0x1f)) & 0xffff) & 0xffff; // coarsex
             V = (V & 0x7BE0) | (T & 0x041F);
         }
     }
@@ -614,7 +566,7 @@ public class PPU {
         int addr_value = addr;
         addr_value  &= 0x3fff;
         if (addr_value >= 0x3000 && addr_value <= 0x3EFF) {
-            addr_value -= 0x1000; // Mirror $3000–$3EFF → $2000–$2EFF
+            addr_value -= 0x1000; // Mirror $3000–$3EFF -> $2000–$2EFF
         }
         if(addr_value <= 0x1fff){
 //            int pt_num = (addr & 0x1000) >> 12;
@@ -841,8 +793,6 @@ public class PPU {
     }
 
     private void writeToOAM(byte data) {
-        //writes to the OAM memory at the OAM_addr
-//        System.out.println("Writing OAM_addr is " + Integer.toHexString(OAM_addr));
         OAM_addr &= 0xff;
         int index = OAM_addr/4;
         int member = OAM_addr%4;

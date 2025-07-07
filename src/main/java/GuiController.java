@@ -2,6 +2,7 @@ package main.java;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -13,11 +14,14 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import main.java.debug.CpuDumpController;
 import main.java.debug.NameTableController;
 import main.java.debug.PatternTableController;
 
@@ -37,6 +41,9 @@ public class GuiController implements Initializable {
 
     private Stage stage;
     private Launch launcher;
+    private PatternTableController ptController;
+    private NameTableController nametController;
+    private CpuDumpController cpuDumpController;
 
     public MenuBar getMenuBar() {
         return menuBar;
@@ -95,11 +102,20 @@ public class GuiController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/pt_table.fxml"));
             Parent root = loader.load();
 
-            PatternTableController ptController = loader.getController();
+            ptController = loader.getController();
 
             Stage stage = new Stage();
             stage.setTitle("Pattern Tables");
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root);
+
+            scene.setOnKeyReleased(event -> {
+                if (event.getCode() == KeyCode.Q) {
+                    launcher.t.display.palette_num = (launcher.t.display.palette_num + 1) % 4;
+                    ptController.showPatternTables();
+                }
+            });
+
+            stage.setScene(scene);
             stage.setResizable(false);
             stage.initOwner(menuBar.getScene().getWindow()); // optional
             stage.show();
@@ -117,7 +133,7 @@ public class GuiController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/name_table.fxml"));
             Parent root = loader.load();
 
-            NameTableController nametController = loader.getController();
+            nametController = loader.getController();
 
             Stage stage = new Stage();
             stage.setTitle("Name Tables");
@@ -132,6 +148,59 @@ public class GuiController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void seeCPU(){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("debug/cpu_debug.fxml"));
+            Parent root = loader.load();
+
+            cpuDumpController = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("CPU Dissassembly");
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.initOwner(menuBar.getScene().getWindow()); // optional
+            stage.show();
+
+            cpuDumpController.setLauncher(launcher);
+            cpuDumpController.setCPU(launcher.getCPU());
+            launcher.t.setDebugController(cpuDumpController);
+
+            stage.setOnCloseRequest(e -> {
+                launcher.t.onClose();
+                cpuDumpController.markClosed();
+            });
+
+            stage.getScene().setOnKeyPressed(e -> {
+                switch (e.getCode()) {
+                    case P -> {
+                        launcher.t.togglePause();
+                        cpuDumpController.setPausedFlag();
+                    }
+                    case R -> {
+                        launcher.t.pause();
+                        cpuDumpController.setPausedFlag();
+                        launcher.t.singleStep();
+                        cpuDumpController.showCpuDump();
+                    }
+                }
+            });
+
+
+            cpuDumpController.showCpuDump();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void clearScreens() {
+        if(cpuDumpController!=null)
+            cpuDumpController.showCpuDump();
+        if(nametController != null)
+            nametController.showNameTables();
     }
 
     public void setLauncher(Launch launch){
