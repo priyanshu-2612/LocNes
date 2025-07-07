@@ -2,7 +2,7 @@
 .root {
     -fx-font-family: "Consolas", monospace;
     -fx-font-size: 13px;
-    -fx-background-color: #fffaf0;
+    -fx-background-color: #f9f9f9;
 }
 
 /* Labels (PC, A, X, etc.) */
@@ -21,14 +21,24 @@
 }
 
 /* Box (unchecked state) */
+/* === Checkbox Styling (Compact Version) === */
+
+/* Shared styling for all checkboxes */
+.check-box {
+    -fx-padding: 2;
+    -fx-font-size: 12px;
+    -fx-text-fill: #111;
+}
+
+/* Box (unchecked state) */
 .check-box .box {
     -fx-background-color: #fdf6e3;
     -fx-border-color: #444;
-    -fx-border-width: 2;
-    -fx-border-radius: 3;
-    -fx-background-radius: 3;
-    -fx-pref-width: 20;
-    -fx-pref-height: 20;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-pref-width: 14;
+    -fx-pref-height: 14;
 }
 
 /* Box (checked state) */
@@ -42,6 +52,7 @@
     -fx-opacity: 0.5;
     -fx-text-fill: #000000;
 }
+
 
 /* === TableView Styling === */
 

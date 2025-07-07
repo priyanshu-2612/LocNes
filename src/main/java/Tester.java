@@ -114,7 +114,7 @@ public class Tester {
         gameLoop = new AnimationTimer() {
             private static double critical = 1790000.0 / 60.0;
             private static final double FRAME_DURATION_NS = 1_000_000_000.0 / 60.0; // ~16.67ms in nanoseconds
-            private long lastTime = 0;
+            private long lastTime = 0, lastDump = 0;
 
             @Override
             public void handle(long now) {
@@ -136,8 +136,9 @@ public class Tester {
                     }
                     while (cycles < critical) {
                         cycles += cycle();
-                        if(SystemCounter % 50 ==0 && debugController != null){
+                        if (now - lastDump > 33_000_000 && debugController != null) { // ~30 FPS dump (every 33ms)
                             debugController.showCpuDump();
+                            lastDump = now;
                         }
                     }
                 }
@@ -450,6 +451,6 @@ public class Tester {
     }
 
     public void onClose(){
-        paused = true;
+        paused = false;
     }
 }

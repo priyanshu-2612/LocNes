@@ -75,6 +75,10 @@ public class Display {
             gc.fillRect(baseX + j*scale, baseY + i*scale, scale, scale);
             }
         }
+        //for the grid look
+        gc.setStroke(Color.color(0, 0, 0, 0.15)); // subtle black gridline with 15% opacity
+        gc.setLineWidth(0.5);
+        gc.strokeRect(baseX, baseY, 8, 8);
     }
 
     public void draw_tile(int[][] tile, int x, int y){

@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="530" prefWidth="460" spacing="10" style="-fx-padding: 12 16 12 16;" stylesheets="@../../resources/debug.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.debug.CpuDumpController">
+<VBox prefHeight="520" prefWidth="460" spacing="10" style="-fx-padding: 12 16 12 16;" stylesheets="@../../resources/debug.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.debug.CpuDumpController">
 
     <HBox spacing="15">
         <Label styleClass="cpu-label" text="PC:">
