@@ -24,6 +24,9 @@ public class Launch extends Application {
 
     public void launchGame(String path){
 
+        ppu = new PPU();
+        cpu = new CPU(ppu);
+        display = new Display(controller, ppu);
         t = new Tester(display, scene, cpu, ppu);
         t.setUpCartridge(path);
         t.readCartridge();
@@ -47,20 +50,18 @@ public class Launch extends Application {
         MenuBar menuBar = controller.getMenuBar();
         mainScreen = controller.getMainScreen();
         scene = new Scene(root);
-//        scene.setFill(Color.PEACHPUFF);
 
 
         stage.setScene(scene);
-//        stage.getIcons().add(new Image("file:C:/Users/prash/Downloads/FFRK_Thunder_Dragon_FFIV.png"));
         stage.setTitle("LocNes v0.9.4");
         stage.setWidth(524.8);//760 //512
         stage.setHeight(((542.5 + menuBar.getHeight() - 7)));//552 //480
         stage.setResizable(false);
 
 
-        ppu = new PPU();
-        cpu = new CPU(ppu);
-        display = new Display(controller, ppu);
+//        ppu = new PPU();
+//        cpu = new CPU(ppu);
+//        display = new Display(controller, ppu);
         root.setTop(menuBar);
         stage.show();
 

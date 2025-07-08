@@ -337,7 +337,7 @@ public class Tester {
         gc.clearRect(0, 0, 256, 240);
         gc.drawImage(ntImage, 0, 0);
 
-        gc.setStroke(Color.color(0, 0, 0, 0.60)); // light black with 15% opacity
+        gc.setStroke(Color.color(0, 0, 0, 0.90)); // light black with 15% opacity
         gc.setLineWidth(0.5);
 
         for (int x = 0; x <= 256; x += 8) {
