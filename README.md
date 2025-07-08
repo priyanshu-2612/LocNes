@@ -2,7 +2,12 @@
 
 **LocNes** is a Java-based NES emulator focused on accuracy, modular design, and ease of debugging. Built from scratch, it emulates the 6502 CPU, PPU rendering, and supports real-time graphical inspection of pattern tables and nametables using a JavaFX interface.
 
-![2x2 Grid](src/main/resources/media/2x2grid.png)
+<p align="center">
+  <img src="src/main/resources/media/ezgif-mario.gif" height="240" hspace="10">
+  <img src="src/main/resources/media/iceclimber_2x1.gif" height="240" hspace="10"><br>
+  <img src="src/main/resources/media/ezgif-donkey_kong.gif" height="240" hspace="10">
+  <img src="src/main/resources/media/tennis_2x2.gif" height="240" hspace="10">
+</p>
 
 ## Features
 
