@@ -68,9 +68,9 @@ The following enhancements are planned for future releases of LocNes:
 - **CLI Mode**: Enable running the emulator directly from the terminal without a GUI, useful for automation and testing.
 - **Cross-Platform Distributions**: Self-contained executables for major OSes.
 
-## Contact
+## Want to contribute?
 
-For questions, suggestions, or contributions, feel free to reach out:
+Emu dev is a lonely excursion and LocNes has a large supply of issues and functionalities to be implemented, if you wish to contribute to this project I would be more than happy. You can mail me to know more about the project.
 
 **Email:** [priyanshu.sharma2612@gmail.com](mailto:priyanshu.sharma2612@gmail.com)
 
