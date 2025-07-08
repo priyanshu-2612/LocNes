@@ -34,3 +34,8 @@
     -fx-background-color: #D0D0D0;
     -fx-text-fill: black;
 }
+
+.border-pane {
+    -fx-background-color: #2e2e2e;
+}
+

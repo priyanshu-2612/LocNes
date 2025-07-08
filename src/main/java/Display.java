@@ -12,23 +12,17 @@ import java.util.Random;
 
 public class Display {
 
-    GraphicsContext gc, gc_pt;
-//    Canvas mainScreen = new Canvas(256*12,256*12);
-//    Canvas mainScreen = new Canvas(528,517); //528,517
+    GraphicsContext gc;
     Canvas mainScreen;
-    Canvas patternScreen = new Canvas(256*3,128*3);
     PPU ppu;
     java.awt.Color[] greyscale;
     int palette_num =0;
     float SCALE = 1.5F;
 
     Display(GuiController controller, PPU ppu){
-//        super(256*12,256*12);
         mainScreen = controller.getMainScreen();
         gc = mainScreen.getGraphicsContext2D();
-//        patternScreen.setLayoutX(538);
-//        patternScreen.setLayoutY(10);
-//        gc_pt = patternScreen.getGraphicsContext2D();
+        gc.clearRect(0, 0, mainScreen.getWidth(), mainScreen.getHeight());
         this.ppu = ppu;
         greyscale = new java.awt.Color[4];
         greyscale[0] = new java.awt.Color(64, 64, 64);   // Dark grey

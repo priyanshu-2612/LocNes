@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.MenuBar;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 
@@ -51,46 +52,15 @@ public class Launch extends Application {
         mainScreen = controller.getMainScreen();
         scene = new Scene(root);
 
-
         stage.setScene(scene);
         stage.setTitle("LocNes v0.9.4");
+
         stage.setWidth(524.8);//760 //512
         stage.setHeight(((542.5 + menuBar.getHeight() - 7)));//552 //480
         stage.setResizable(false);
 
         root.setTop(menuBar);
         stage.show();
-
-
-        //TODO: Use gameloop
-
-        //Timeline is slow and not suitable for NES
-
-//        gameLoop.setCycleCount(Timeline.INDEFINITE);
-//
-//        KeyFrame kf = new KeyFrame(
-//                Duration.seconds(0.0001),
-//                actionEvent -> {
-//                    try {
-//                        double critical = 1790000.0 / 60.0;
-//                        double cycles = 0;
-//
-//                        while (cycles < critical) {
-//                            cycles += t.cycle();
-//                        }
-//                        //System.out.println(Arrays.toString(t.cpu.controller.controller_input));
-//                        //System.out.println("SIZE OF CANVAS IS " + stage.getWidth() + " " + stage.getHeight());
-//                    } catch (RuntimeException e) {
-//                        System.out.println("GAME OVER");
-//                        e.printStackTrace();
-//                        gameLoop.stop();
-//                    }
-//                });
-//
-//        gameLoop.getKeyFrames().add(kf);
-//
-//        gameLoop.play();
-
     }
 
     public CPU getCPU(){

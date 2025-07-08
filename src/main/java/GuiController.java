@@ -40,36 +40,25 @@ public class GuiController implements Initializable {
     private CpuDumpController cpuDumpController;
     private boolean isFullscreen = false;
 
-    public MenuBar getMenuBar() {
-        return menuBar;
-    }
-
-    public void setMenuBar(MenuBar menuBar) {
-        this.menuBar = menuBar;
-    }
-
-    public Canvas getMainScreen() {
-        return mainScreen;
-    }
-
-    public void setMainScreen(Canvas mainScreen) {
-        this.mainScreen = mainScreen;
-    }
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         BorderPane.setAlignment(mainScreen, Pos.TOP_LEFT);
+
         mainScreen.widthProperty().bind(root.widthProperty());
-        mainScreen.heightProperty().bind(
-                root.heightProperty().subtract(menuBar.heightProperty()));
+//        mainScreen.heightProperty().bind(
+//                root.heightProperty().subtract(menuBar.heightProperty()));
+        updateCanvasBinding();
+
         Platform.runLater(() -> {
             GraphicsContext gc = mainScreen.getGraphicsContext2D();
             gc.setFill(Color.web("#2e2e2e")); // dark gray
             gc.fillRect(0, 0, mainScreen.getWidth(), mainScreen.getHeight());
         });
+
     }
 
     public void openNesFile(ActionEvent actionEvent) {
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open NES ROM");
         fileChooser.getExtensionFilters().addAll(
@@ -213,7 +202,7 @@ public class GuiController implements Initializable {
         }
     }
 
-    private void updateCanvasBinding() {
+    public void updateCanvasBinding() {
         mainScreen.heightProperty().unbind();
 
         if (isFullscreen) {
@@ -229,10 +218,10 @@ public class GuiController implements Initializable {
 
         isFullscreen = showing;
 
-        updateCanvasBinding();
-
         menuBar.setVisible(!showing);
         menuBar.setManaged(!showing);
+
+        updateCanvasBinding();
 
         if (!showing) {
             stage.setWidth(524.8);
@@ -256,6 +245,27 @@ public class GuiController implements Initializable {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    public Stage getStage() {
+        return stage;
+    }
+
+
+    public MenuBar getMenuBar() {
+        return menuBar;
+    }
+
+    public void setMenuBar(MenuBar menuBar) {
+        this.menuBar = menuBar;
+    }
+
+    public Canvas getMainScreen() {
+        return mainScreen;
+    }
+
+    public void setMainScreen(Canvas mainScreen) {
+        this.mainScreen = mainScreen;
     }
 
 }
