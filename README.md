@@ -20,11 +20,13 @@
 ## Requirements
 
 - Java 17 or higher
-- JavaFX SDK 17+  
+- JavaFX SDK 17+
+  
   > Note: JavaFX is not included in the JDK from version 11 onward.  
   > Download it from [https://openjfx.io](https://openjfx.io)
 - IntelliJ IDEA (or any compatible IDE)
-- [Lombok](https://projectlombok.org/)  
+- [Lombok](https://projectlombok.org/)
+  
   > Ensure your IDE has the Lombok plugin enabled.
 - JUnit 5.8 (for testing)
 - Jackson (for JSON serialization/deserialization)
