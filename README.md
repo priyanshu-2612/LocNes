@@ -2,6 +2,7 @@
 
 **LocNes** is a Java-based NES emulator focused on accuracy, modular design, and ease of debugging. Built from scratch, it emulates the 6502 CPU, PPU rendering, and supports real-time graphical inspection of pattern tables and nametables using a JavaFX interface.
 
+![NES 2x2 Grid](src/main/resources/media/nes_2x2_grid_cropped.gif)
 
 ## Features
 
@@ -32,7 +33,7 @@ cd LocNes
 - Use the **File → Open** menu to select a `.nes` ROM file
 - Toggle the debug view via keyboard shortcuts or UI controls
 - Use `Ctrl + F` to hide the menu bar and maximize canvas space
-> ℹ️ *Note: The `Ctrl + F` shortcut to hide the menu bar is currently under maintenance.*
+> *Note: The `Ctrl + F` shortcut to hide the menu bar is currently under maintenance.*
 ### Input Controls
 
 LocNes maps keyboard keys to the NES controller as follows:
