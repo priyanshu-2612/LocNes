@@ -140,8 +140,11 @@ public class GuiController implements Initializable {
             stage.initOwner(menuBar.getScene().getWindow()); // optional
             stage.show();
 
+            stage.setOnCloseRequest(e -> nametController.stopRendering());
+
             nametController.setLauncher(launcher);
-            nametController.showNameTables();
+//            nametController.showNameTables();
+            nametController.startRendering();
 
         } catch (IOException e) {
             e.printStackTrace();

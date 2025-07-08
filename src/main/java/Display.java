@@ -61,24 +61,24 @@ public class Display {
         }
     }
 
-    public void drawTile(GraphicsContext gc, int[][] sprite, int paletteIndex, int col, int row){
+    public void drawTile(PixelWriter pw, GraphicsContext gc, int[][] sprite, int paletteIndex, int col, int row){
         Color c;
-        float scale = 1;
-        double baseX = (col) * 8 * scale;
-        double baseY = (row) * 8 * scale;
         for(int i=0 ; i<8 ; i++){
         for(int j=0 ; j<8 ; j++){
-//            c = getFXColor(greyscale[sprite[i][j]]);
             int paletteID = ppu.getColor(paletteIndex, sprite[i][j]);
             c = getFXColor(ppu.palScreen[paletteID]);
-            gc.setFill(c);
-            gc.fillRect(baseX + j*scale, baseY + i*scale, scale, scale);
+            int a = (int) Math.round(c.getOpacity() * 255);
+            int r = (int) Math.round(c.getRed()     * 255);
+            int g = (int) Math.round(c.getGreen()   * 255);
+            int b = (int) Math.round(c.getBlue()    * 255);
+
+            int argb = (a << 24) | (r << 16) | (g << 8) | b;
+            int x = (col * 8) + j;
+            int y= (row * 8) + i;
+            pw.setArgb(x, y, argb);
+
             }
         }
-        //for the grid look
-        gc.setStroke(Color.color(0, 0, 0, 0.15)); // subtle black gridline with 15% opacity
-        gc.setLineWidth(0.5);
-        gc.strokeRect(baseX, baseY, 8, 8);
     }
 
     public void draw_tile(int[][] tile, int x, int y){

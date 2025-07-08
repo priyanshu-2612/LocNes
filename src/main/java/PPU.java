@@ -390,10 +390,6 @@ public class PPU {
                     }
                 }
             }
-
-
-
-
         }
 
         if(cycle >= 1 && cycle <= 256)

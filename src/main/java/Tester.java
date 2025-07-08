@@ -4,8 +4,14 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.paint.Color;
 import main.java.debug.CpuDumpController;
+import main.java.debug.NameTableController;
+
+import javax.naming.Name;
 
 
 public class Tester {
@@ -304,37 +310,42 @@ public class Tester {
         //}
     }
 
-    public void draw_nametable(GraphicsContext gc1, GraphicsContext gc2, GraphicsContext gc3, GraphicsContext gc4){
+    public void draw_nametable(GraphicsContext gc, int bgBase){
         int[][] sprite = new int[8][8];
-        for(int i=0 ; i< 0x400*4 ; i++) {
+        WritableImage ntImage = new WritableImage(256, 240);
+        PixelWriter pw = ntImage.getPixelWriter();
+        for(int i=bgBase ; i< bgBase + 0x3C0 ; i++) {
             int local = i & 0x3FF;
-            if (local >= 960) continue; //skipping attribute bytes
             int col =  local % 32;       // 0‑31
             int row =  local / 32;       // 0-29
-
-//            draw(sprite , ppu.ppuRead(0x2000+i) );
-            int nt_base_addr = (i<0x400 ? 0x2000 : (i<0x800 ? 0x2400 : (i<0xC00? 0x2800 : 0x2C00)));
-            int addr = nt_base_addr + (32 * row) + col;
+            int addr = bgBase + (32 * row) + col;
             int tilenum = ppu.ppuRead(addr);
             int bg_pattern_table = (ppu.ppu_registers[0] & 0x10) != 0 ? 1 : 0;
             int tile_addr = 0x1000 * bg_pattern_table;
             int taddr = tile_addr + (tilenum << 4);
 
-            draw(sprite , taddr );
+            draw(sprite , taddr);
 
-            int attrAddr = nt_base_addr + 0x3C0 + (row / 4) * 8 + (col / 4);
+            int attrAddr = bgBase + 0x3C0 + (row / 4) * 8 + (col / 4);
             int attrByte = ppu.ppuRead(attrAddr);
             int shift = ((row % 4) / 2) * 4 + ((col % 4) / 2) * 2;
             int paletteIndex = (attrByte >> shift) & 0b11;
 
-            if(i<0x400)
-                display.drawTile(gc1,sprite, paletteIndex, col , row);
-            else if(i<0x800)
-                display.drawTile(gc2, sprite, paletteIndex, col , row);
-            else if(i<0xC00)
-                display.drawTile(gc3, sprite, paletteIndex, col , row);
-            else
-                display.drawTile(gc4, sprite, paletteIndex, col , row);
+            display.drawTile(pw, gc, sprite, paletteIndex, col , row);
+
+        }
+        gc.clearRect(0, 0, 256, 240);
+        gc.drawImage(ntImage, 0, 0);
+
+        gc.setStroke(Color.color(0, 0, 0, 0.60)); // light black with 15% opacity
+        gc.setLineWidth(0.5);
+
+        for (int x = 0; x <= 256; x += 8) {
+            gc.strokeLine(x, 0, x, 240);
+        }
+
+        for (int y = 0; y <= 240; y += 8) {
+            gc.strokeLine(0, y, 256, y);
         }
     }
 
@@ -453,4 +464,5 @@ public class Tester {
     public void onClose(){
         paused = false;
     }
+
 }
