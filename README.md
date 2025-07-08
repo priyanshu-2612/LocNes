@@ -66,3 +66,10 @@ The following enhancements are planned for future releases of LocNes:
 - **Performance Enhancements**: Optimized rendering and memory access paths.
 - **CLI Mode**: Enable running the emulator directly from the terminal without a GUI, useful for automation and testing.
 - **Cross-Platform Distributions**: Self-contained executables for major OSes.
+
+## Contact
+
+For questions, suggestions, or contributions, feel free to reach out:
+
+**Email:** [priyanshu.sharma2612@gmail.com](mailto:priyanshu.sharma2612@gmail.com)
+
