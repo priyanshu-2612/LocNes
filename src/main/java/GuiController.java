@@ -38,6 +38,7 @@ public class GuiController implements Initializable {
     private PatternTableController ptController;
     private NameTableController nametController;
     private CpuDumpController cpuDumpController;
+    private boolean isFullscreen = false;
 
     public MenuBar getMenuBar() {
         return menuBar;
@@ -209,6 +210,36 @@ public class GuiController implements Initializable {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void updateCanvasBinding() {
+        mainScreen.heightProperty().unbind();
+
+        if (isFullscreen) {
+            mainScreen.heightProperty().bind(root.heightProperty());
+        } else {
+            mainScreen.heightProperty().bind(
+                    root.heightProperty().subtract(menuBar.heightProperty()));
+        }
+    }
+
+    public void fullscreen() {
+        boolean showing = menuBar.isVisible();
+
+        isFullscreen = showing;
+
+        updateCanvasBinding();
+
+        menuBar.setVisible(!showing);
+        menuBar.setManaged(!showing);
+
+        if (!showing) {
+            stage.setWidth(524.8);
+            stage.setHeight(542.5 - 7);
+        } else {
+            double menuHeight = menuBar.getHeight();
+            stage.setHeight((542.5 - 7) - menuHeight);
         }
     }
 

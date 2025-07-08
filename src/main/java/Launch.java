@@ -58,10 +58,6 @@ public class Launch extends Application {
         stage.setHeight(((542.5 + menuBar.getHeight() - 7)));//552 //480
         stage.setResizable(false);
 
-
-//        ppu = new PPU();
-//        cpu = new CPU(ppu);
-//        display = new Display(controller, ppu);
         root.setTop(menuBar);
         stage.show();
 

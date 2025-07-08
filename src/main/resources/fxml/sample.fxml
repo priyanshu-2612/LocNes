@@ -31,7 +31,7 @@
                 </Menu>
             <Menu mnemonicParsing="false" text="View">
               <items>
-                <MenuItem accelerator="Ctrl+F" mnemonicParsing="false" text="Full Screen" />
+                <MenuItem accelerator="Ctrl+F" mnemonicParsing="false" onAction="#fullscreen" text="Full Screen" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
