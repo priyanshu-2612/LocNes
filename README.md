@@ -4,9 +4,9 @@
 
 <p align="center">
   <img src="src/main/resources/media/ezgif-mario.gif" height="240" hspace="10">
-  <img src="src/main/resources/media/iceclimber_2x1.gif" height="240" hspace="10"><br>
+  <img src="src/main/resources/media/ezgif-iceclimber2.gif" height="240" hspace="10"><br>
   <img src="src/main/resources/media/ezgif-donkey_kong.gif" height="240" hspace="10">
-  <img src="src/main/resources/media/tennis_2x2.gif" height="240" hspace="10">
+  <img src="src/main/resources/media/ezgif-tennis2.gif" height="240" hspace="10">
 </p>
 
 ## Features
