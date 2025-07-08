@@ -6,7 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.MenuBar;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 
@@ -40,7 +39,7 @@ public class Launch extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/fxml/sample.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/fxml/start_screen.fxml"));
         BorderPane root = loader.load();
 
         controller = loader.getController();

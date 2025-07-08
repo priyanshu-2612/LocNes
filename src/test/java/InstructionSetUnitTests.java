@@ -2,6 +2,7 @@ package test.java;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Value;
 import main.java.CPU;
 import main.java.Decoder;
 import main.java.InstructionSet;
@@ -19,6 +20,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class InstructionSetUnitTests {
+    String testsDirectoryPath = "C:/Users/prash/Downloads/ProcessorTests-main/ProcessorTests-main/nes6502/v1/";
     PPU ppu = new PPU();
     CPU cpu = new CPU(ppu);
     InstructionSet instructionSet = new InstructionSet(cpu,ppu);
@@ -40,14 +42,9 @@ public class InstructionSetUnitTests {
         cpu.turnOnTestMode();
         cpu.setPpu(ppu);
 
-//        int counter=0;
         String path;
-//        while(counter <= 0xff){
-            //String hex = String.format("%02X", value); also works
-//            hex = Integer.toHexString(opcode);
-//            hex = String.format("%2s", hex).replace(" ", "0");
             System.out.println(hex);
-            path = "C:/Users/prash/Downloads/ProcessorTests-main/ProcessorTests-main/nes6502/v1/" + hex + ".json";
+            path = testsDirectoryPath + hex + ".json";
             System.out.println("Opening " + path);
             jsonFile = new File(path);
             List<Test6502Format> testcases = objectMapper.readValue(jsonFile,
@@ -60,7 +57,6 @@ public class InstructionSetUnitTests {
                 System.out.println(Arrays.toString(instruction));
 
                 cpu.setPC((short) tc.getInitial().pc);
-//                decoder.run_one_cpu_cycle(instruction);
                 decoder.run_one_cycle();
 
                 CpuState csFinal = tc.getFinalState();
@@ -82,8 +78,6 @@ public class InstructionSetUnitTests {
                    assertEquals(valThatShouldBe, valAtTheEnd, "At location " + address + " should be " + valThatShouldBe);
                 }
             }
-//        }
-//        counter++;
     }
 
     public void initialize_ram(CpuState cpuState){
@@ -96,8 +90,6 @@ public class InstructionSetUnitTests {
         cpu.setStatus((byte) cpuState.p);
         for(int i=0; i<cpuState.ram.size() ; i++){
             cpu.writeTo(cpuState.ram.get(i).get(0), (byte)((int)cpuState.ram.get(i).get(1) & 0xff) );
-//            System.out.println("WROTE " + ((int)cpuState.ram.get(i).get(1) & 0xff) + " at " + cpuState.ram.get(i).get(0));
-//            System.out.println("VALUE READ IS " + cpu.getData(cpuState.ram.get(i).get(0)));
         }
     }
 

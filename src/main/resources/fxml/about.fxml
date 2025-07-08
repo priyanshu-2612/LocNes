@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<VBox spacing="10" style="-fx-padding: 20;-fx-font-family: 'Consolas', 'Segoe UI Mono', monospace;-fx-font-size: 12px;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/22" fx:controller="main.java.help.AboutController">
+<?import javafx.scene.control.Hyperlink?>
+<VBox spacing="10" style="-fx-padding: 20;-fx-font-family: 'Consolas', 'Segoe UI Mono', monospace;-fx-font-size: 12px;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.help.AboutController">
 
-    <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="NES Debugger v0.9.4" />
+    <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" stylesheets="@../css/about.css" text="NES Debugger v0.9.4" />
 
     <TextFlow lineSpacing="4">
 
@@ -30,9 +30,7 @@
         <Text text="• JUnit instruction tests&#10;" />
         <Text text="• FXML UI + CSS themes&#10;&#10;" />
 
-        
-
-        <Hyperlink onAction="#handleGitHubLink" style="-fx-font-size: 12px;" text="https://github.com/priyanshu-2612/NEMUlator" />
+        <Hyperlink onAction="#handleGitHubLink" style="-fx-font-size: 12px;" text="https://github.com/priyanshu-2612/LocNes" />
 
     </TextFlow>
 </VBox>
