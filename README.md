@@ -20,23 +20,23 @@
 ## Requirements
 
 - Java 17 or higher
-- JavaFX SDK 17+
-  
-  > Note: JavaFX is not included in the JDK from version 11 onward.  
-  > Download it from [https://openjfx.io](https://openjfx.io)
-- IntelliJ IDEA (or any compatible IDE)
-- [Lombok](https://projectlombok.org/)
-  
-  > Ensure your IDE has the Lombok plugin enabled.
-- JUnit 5.8 (for testing)
-- Jackson (for JSON serialization/deserialization)
-
 ## Running the Emulator
 
 ### 1. Clone the Repository
 
+```bash
 git clone https://github.com/priyanshu-2612/LocNes.git
 cd LocNes
+```
+
+### 2. Run with Maven
+
+Use the built-in Maven wrapper:
+
+```bash
+./mvnw javafx:run       # For Linux/macOS
+mvnw.cmd javafx:run     # For Windows
+```
 
 ## Usage
 
