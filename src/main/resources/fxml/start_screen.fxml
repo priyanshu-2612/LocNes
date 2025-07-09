@@ -7,7 +7,7 @@
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane fx:id="root" stylesheets="@../css/retro.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.GuiController">
+<BorderPane fx:id="root" stylesheets="@../css/retro.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.locnes.GuiController">
 
     <top>
         <MenuBar fx:id="menuBar" stylesheets="@../css/retro.css">

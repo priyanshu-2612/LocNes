@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_LEFT" prefHeight="483.0" prefWidth="232.0" spacing="10" style="-fx-background-color: #f9f9f9; -fx-padding: 8 20 20 20;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.debug.PatternTableController">
+<VBox alignment="TOP_LEFT" prefHeight="483.0" prefWidth="232.0" spacing="10" style="-fx-background-color: #f9f9f9; -fx-padding: 8 20 20 20;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.locnes.debug.PatternTableController">
 <!--#f5fdf6-->
    <Label styleClass="pt-label" text="Pattern Table 0:">
       <font>

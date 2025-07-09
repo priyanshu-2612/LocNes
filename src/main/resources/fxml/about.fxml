@@ -6,7 +6,7 @@
 <?import javafx.scene.text.TextFlow?>
 
 <?import javafx.scene.control.Hyperlink?>
-<VBox spacing="10" style="-fx-padding: 20;-fx-font-family: 'Consolas', 'Segoe UI Mono', monospace;-fx-font-size: 12px;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.help.AboutController">
+<VBox spacing="10" style="-fx-padding: 20;-fx-font-family: 'Consolas', 'Segoe UI Mono', monospace;-fx-font-size: 12px;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.locnes.help.AboutController">
 
     <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" stylesheets="@../css/about.css" text="NES Debugger v0.9.4" />
 
