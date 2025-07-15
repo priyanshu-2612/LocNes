@@ -9,8 +9,8 @@
       <sub><b>Super Mario Bros</b></sub>
     </td>
     <td align="center" style="padding: 10px;">
-      <img src="src/main/resources/media/ezgif-iceclimber2.gif" width="360"><br>
-      <sub><b>Ice Climber</b></sub>
+      <img src="src/main/resources/media/ezgif-excitebike.gif" width="360"><br>
+      <sub><b>Excitebike</b></sub>
     </td>
   </tr>
   <tr>
@@ -19,8 +19,8 @@
       <sub><b>Donkey Kong</b></sub>
     </td>
     <td align="center" style="padding: 10px;">
-      <img src="src/main/resources/media/ezgif-tennis2.gif" width="360"><br>
-      <sub><b>Tennis</b></sub>
+      <img src="src/main/resources/media/ezgif-wreckingcrew.gif" width="360"><br>
+      <sub><b>Wrecking Crew</b></sub>
     </td>
   </tr>
 </table>
