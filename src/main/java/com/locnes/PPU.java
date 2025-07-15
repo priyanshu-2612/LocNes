@@ -371,12 +371,11 @@ public class PPU {
                         if (!showLeftSprite) fg_pixel = 0;
                     }
 
-                    if((!((ppu_registers[Mask-0x2000]&0x02) != 0) && !((ppu_registers[Mask-0x2000]&0x04) != 0))){
+                    if(!(showLeftBG || showLeftSprite)){
 
                         if(cycle >= 9 && cycle < 256){
-                            if(!getSpriteZeroHit() && bg_pixel != 0 && fg_pixel != 0){
+                            if(!getSpriteZeroHit()){
                                 setSpriteZeroHit();
-
                             }
                         }
                     }
@@ -384,7 +383,6 @@ public class PPU {
                         if(cycle >= 1 && cycle < 256){
                             if(!getSpriteZeroHit() && bg_pixel != 0 && fg_pixel != 0){
                                 setSpriteZeroHit();
-
                             }
                         }
                     }
