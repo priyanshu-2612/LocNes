@@ -69,7 +69,7 @@ LocNes maps keyboard keys to the NES controller as follows:
 | A            | X             |
 | B            | Z             |
 | Start        | Enter         |
-| Select       | Right Shift   |
+| Select       | Backspace     |
 | D-Pad Up     | Up Arrow      |
 | D-Pad Down   | Down Arrow    |
 | D-Pad Left   | Left Arrow    |
